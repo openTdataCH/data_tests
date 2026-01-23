@@ -33,7 +33,7 @@ def get_commandline_arguments():
 
 def import_and_run_test(test_name: str) -> dict:
     test_report = DataTest(test_name)
-    test_module_path = f"{CONFIG['folders']["tests"]}.{test_name}"
+    test_module_path = f"{CONFIG['folders']['tests']}.{test_name}"
     try:
         test_module = importlib.import_module(test_module_path)
         if hasattr(test_module, 'run') and callable(getattr(test_module, 'run')):
@@ -54,7 +54,7 @@ def import_and_run_test(test_name: str) -> dict:
 
 
 def store_test_report(test_name: str, test_report: dict):
-    path = f"{CONFIG['folders']["test_reports"]}/{test_name}.jsonl"
+    path = f"{CONFIG['folders']['test_reports']}/{test_name}.jsonl"
     with open(path, "a", encoding='utf-8') as f:
         f.write('\n' + json.dumps(test_report, ensure_ascii=False))
 
