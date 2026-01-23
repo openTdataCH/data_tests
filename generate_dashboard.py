@@ -97,7 +97,9 @@ for file_name, file_data in report_data:
             html_content += f'<td>{file_data[date_key][hour]}</td>'
     html_content += '</tr>'
 
-html_content += '</table></body></html>'
+html_content += '</table>'
+html_content += f'<p>Last updated: {datetime.now().isoformat()[:23]} - Home: <a href="https://opentransportdata.swiss">opentransportdata.swiss</a></p>'
+html_content += f'</body></html>'
 
 # Write to HTML file
 with open(f"{CONFIG['folders']['html']}/data_tests_dashboard.html", 'w', encoding="utf-8-sig") as report_file:
