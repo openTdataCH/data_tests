@@ -21,16 +21,17 @@ def prune_old_logs(folder_path, days):
 
             with open(file_path, 'r', encoding='utf-8') as file:
                 for line in file:
-                    try:
-                        log_entry = json.loads(line.strip())
-                        # Parse the timestamp
-                        log_time = datetime.fromisoformat(log_entry['logs'][0:19])  # timestamp of beginning of first line.
+                    if line.strip().startswith('{'):
+                        try:
+                            log_entry = json.loads(line.strip())
+                            # Parse the timestamp
+                            log_time = datetime.fromisoformat(log_entry['logs'][0:19])  # timestamp of beginning of first line.
 
-                        # Keep lines newer than the threshold
-                        if log_time >= threshold_date:
-                            pruned_lines.append(line.strip())
-                    except (json.JSONDecodeError, KeyError) as e:
-                        print(f"Error processing line in {filename}: {e}")
+                            # Keep lines newer than the threshold
+                            if log_time >= threshold_date:
+                                pruned_lines.append(line.strip())
+                        except (json.JSONDecodeError, KeyError) as e:
+                            print(f"Error processing line in {filename}: {e}")
 
             # Write pruned lines back to the file
             with open(file_path, 'w', encoding='utf-8') as file:
