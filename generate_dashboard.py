@@ -100,7 +100,7 @@ for file_name, file_data in report_data:
 html_content += '</table></body></html>'
 
 # Write to HTML file
-with open(f'{CONFIG['folders']['html']}/data_tests_dashboard.html', 'w', encoding="utf-8-sig") as report_file:
+with open(f"{CONFIG['folders']['html']}/data_tests_dashboard.html", 'w', encoding="utf-8-sig") as report_file:
     report_file.write(html_content)
 
 print("Report generated: data_tests_dashboard.html")
