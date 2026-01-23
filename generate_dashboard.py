@@ -38,9 +38,9 @@ def get_status_symbol(n_exceptions, n_failures, n_warnings):
         return '🟢'  # Green for success
 
 # Process each JSONL file
-for filename in os.listdir(CONFIG['folders']["test_reports"]):
+for filename in os.listdir(CONFIG['folders']['test_reports']):
     if filename.endswith('.jsonl'):
-        file_path = os.path.join(CONFIG['folders']["test_reports"], filename)
+        file_path = os.path.join(CONFIG['folders']['test_reports'], filename)
         # Initialize a dictionary to hold hour-wise data for this file
         file_data = {date.strftime('%Y-%m-%d'): {hour: "" for hour in range(24)} for date in date_range}
 
@@ -100,7 +100,7 @@ for file_name, file_data in report_data:
 html_content += '</table></body></html>'
 
 # Write to HTML file
-with open(f'{CONFIG['folders']["html"]}/data_tests_dashboard.html', 'w', encoding="utf-8-sig") as report_file:
+with open(f'{CONFIG['folders']['html']}/data_tests_dashboard.html', 'w', encoding="utf-8-sig") as report_file:
     report_file.write(html_content)
 
 print("Report generated: data_tests_dashboard.html")

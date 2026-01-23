@@ -43,4 +43,4 @@ def prune_old_logs(folder_path, days):
 
 if __name__ == '__main__':
     days = 7  # Replace with the desired number of days
-    prune_old_logs(CONFIG['folders']["test_reports"], days)
+    prune_old_logs(CONFIG['folders']['test_reports'], days)
