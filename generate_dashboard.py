@@ -1,6 +1,6 @@
 """Given a folder TEST_REPORTS_FOLDER containing several files of type JSONL, each with JSON-Line objects,
 provide a Python script which generates an HTML report page with a table as follows: For each file,
-produce a row; cover the last 7 calendar days in columns of the table; for each day, provide 24 hour subcolumns.
+produce a row; cover the last DAY_RANGE calendar days in columns of the table; for each day, provide 24 hour subcolumns.
 For each JSON object in the file, get the reference timestamp (ISO 8601 formatted) from the the value at the key "logs".
 or each hour check if there is one or more objects;
 if so, check if object(s) have a "n_exceptions" key with value > 0, then provide a red symbol;
@@ -19,9 +19,11 @@ import json
 from datetime import datetime, timedelta
 from configuration import CONFIG
 
-# Set up date range for the last 7 days
+DAY_RANGE = 3
+
+# Set up date range for the last DAY_RANGE days
 today = datetime.now()
-date_range = [today - timedelta(days=i) for i in range(7)]
+date_range = [today - timedelta(days=i) for i in range(DAY_RANGE)]
 
 # Initialize a list to hold data for the report
 report_data = []
@@ -72,7 +74,7 @@ for filename in os.listdir(CONFIG['folders']['test_reports']):
 
 # Generate HTML report
 html_content = '<html><head><title>Report</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="styles.css"></head><body>'
-html_content += '<h1>data_tests_dashboard - Report for the Last 7 Days</h1>'
+html_content += f'<h1>data_tests_dashboard - Report for the Last {DAY_RANGE} Days</h1>'
 html_content += '<table border="1"><tr><th>File</th>'
 
 # Create headers for both dates and hours
@@ -81,7 +83,7 @@ for date in reversed(date_range):
 html_content += '</tr><tr><th></th>'
 
 # Create hour columns
-for _ in range(7):
+for _ in range(DAY_RANGE):
     for hour in range(24):
         html_content += f'<th>{hour:02}</th>'
 html_content += '</tr>'
