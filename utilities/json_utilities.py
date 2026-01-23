@@ -30,7 +30,7 @@ def load_json(url: str, data_test = None, key: str = None, json_schema = None) -
     return json.loads(response.content.decode('utf-8')), size, data_test
 
 
-def load_json_file(relative_path: str) -> dict | None:
+def load_json_file(relative_path: str):
     """Load a CSV file from the given relative path, respective the project root directory; returns None if failed."""
     try:
         with open(get_path(relative_path), "r", encoding="utf-8") as f:
