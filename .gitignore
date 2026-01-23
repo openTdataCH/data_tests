@@ -1,0 +1,5 @@
+local_configuration.py
+.idea
+data/**
+venv/**
+.venv/**
