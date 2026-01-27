@@ -20,8 +20,6 @@ REF_SIZES_FILE = "data/persistent_test_data/atlas_v2_test_sizes.json"
 DATASETS = [ "business-organisation", "contact-point", "line", "parking-lot", "platform", "reference-point",
              "relation", "service-point", "stop-point", "subline", "toilet", "traffic-point"]
 FLAVOURS = ["timetable-years", "full", "actual-date"]
-DATASETS = ["reference-point"]
-FLAVOURS = ["actual-date"]
 SIZE_THRESHOLDS = [0.9, 1.1]
 AGE_IN_DAYS_THRESHOLD = 0.9
 ALPHA = 0.2  # alpha factor for the Exponential Moving Average (EMA) of the sizes
@@ -42,11 +40,14 @@ def run() -> dict:
                 header, rows, status_code, data_test = load_csv_from_url(url, data_test=data_test)
                 if status_code < 400:
                     if ref_sizes:
-                        ref_size = ref_sizes[dataset][flavour]
-                        data_test.test(SIZE_THRESHOLDS[0] * ref_size < size < SIZE_THRESHOLDS[1] * ref_size,
-                                       if_true_log_info=f"Passed size check, has {len(rows)} rows.",
-                                       if_false_log_warning=f"Resource size {size} is not within {SIZE_THRESHOLDS} of reference size {ref_size}.")
-                        size = round(ALPHA * size + (1 - ALPHA) * ref_size)
+                        ref_sizes_ds = ref_sizes.get(dataset)
+                        if ref_sizes_ds:
+                            ref_size = ref_sizes_ds.get(flavour)
+                            if ref_size is not None and type(ref_size) is int:
+                                data_test.test(SIZE_THRESHOLDS[0] * ref_size < size < SIZE_THRESHOLDS[1] * ref_size,
+                                               if_true_log_info=f"Passed size check, has {len(rows)} rows.",
+                                               if_false_log_warning=f"Resource size {size} is not within {SIZE_THRESHOLDS} of reference size {ref_size}.")
+                                size = round(ALPHA * size + (1 - ALPHA) * ref_size) # Exponential Moving Average (EMA)
                     sizes[dataset][flavour] = size
 
                     metadata_resource = resource_by_identifier(meta_data, identifier)
