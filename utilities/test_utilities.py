@@ -12,6 +12,19 @@ def now_iso8601():
     return dt.now(pytz.timezone('Europe/Zurich')).isoformat()
 
 
+def display_report_from_json(json_data: dict):
+    s = f"Test report for test '{json_data.get('name')}':\n"
+    s += f"Description: {json_data.get('description')}\n"
+    s += f"n_warnings : {json_data.get('n_warnings')}\n"
+    s += f"n_failures : {json_data.get('n_warnings')}\n"
+    s += f"exceptions : {json_data.get('exceptions')}\n"
+    s += "Logs:\n"
+    for log in json_data['logs'].splitlines():
+        s += f"    {log}\n"
+    return s
+
+
+
 class DataTest():
 
     def __init__(self, name: str):
