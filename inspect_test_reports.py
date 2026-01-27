@@ -25,7 +25,7 @@ def inspect_test_reports(test_name: str, number_of_tests: int):
 
 if __name__ == '__main__':
     test_name = sys.argv[1]
-    number_of_tests = int(sys.argv[2]) if len(sys.argv) == 2 else 10
+    number_of_tests = int(sys.argv[2]) if len(sys.argv) > 2 else 10
     inspect_test_reports(test_name, number_of_tests)
 
 

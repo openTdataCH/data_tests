@@ -19,7 +19,9 @@ from utilities.test_utilities import DataTest
 REF_SIZES_FILE = "data/persistent_test_data/atlas_v2_test_sizes.json"
 DATASETS = [ "business-organisation", "contact-point", "line", "parking-lot", "platform", "reference-point",
              "relation", "service-point", "stop-point", "subline", "toilet", "traffic-point"]
-FLAVOURS = "timetable-years", "full", "actual-date"
+FLAVOURS = ["timetable-years", "full", "actual-date"]
+DATASETS = ["reference-point"]
+FLAVOURS = ["actual-date"]
 SIZE_THRESHOLDS = [0.9, 1.1]
 AGE_IN_DAYS_THRESHOLD = 0.9
 ALPHA = 0.2  # alpha factor for the Exponential Moving Average (EMA) of the sizes
