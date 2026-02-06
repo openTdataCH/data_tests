@@ -19,7 +19,7 @@ import logging
 THRESHOLD_HOURS = 32
 
 LOG_FILE = os.path.join(CONFIG['folders']['logs'], "daily_report_mail.log")
-logging.basicConfig(handlers=[logging.FileHandler(LOG_FILE, 'w', 'utf-8')], level=logging.INFO, format='%(asctime)s: %(levelname)s: %(message)s')
+logging.basicConfig(handlers=[logging.FileHandler(LOG_FILE, 'a', 'utf-8')], level=logging.INFO, format='%(asctime)s: %(levelname)s: %(message)s')
 
 
 def load_affected_test_reports(file_path):
