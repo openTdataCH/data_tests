@@ -20,14 +20,15 @@ THRESHOLD_HOURS = 32
 def check_jsonl_file(file_path):
     with open(file_path, 'r') as f:
         for line in f:
-            json_data = json.loads(line)
-            if 'logs' in json_data:
-                logs_timestamp = datetime.fromisoformat(json_data['logs'][0:19])
-                if logs_timestamp > datetime.now() - timedelta(hours=THRESHOLD_HOURS):
-                    n_exceptions = json_data.get('n_exceptions', 0)
-                    n_failures = json_data.get('n_failures', 0)
-                    if n_exceptions > 0 or n_failures > 0:
-                        return True, json_data['logs']
+            if line.strip().startswith("{"):
+                json_data = json.loads(line.strip())
+                if 'logs' in json_data:
+                    logs_timestamp = datetime.fromisoformat(json_data['logs'][0:19])
+                    if logs_timestamp > datetime.now() - timedelta(hours=THRESHOLD_HOURS):
+                        n_exceptions = json_data.get('n_exceptions', 0)
+                        n_failures = json_data.get('n_failures', 0)
+                        if n_exceptions > 0 or n_failures > 0:
+                            return True, json_data['logs']
     return False, None
 
 
@@ -36,7 +37,7 @@ def augment_html_rendering(payload: str) -> str:
     payload = payload.replace("\n", "<br>\n")
     for token in ("warning", "failure", "error", "exception"):  # lowercase only
         for t in (token, token.upper(), token[0].upper() + token[1:]):
-            payload = payload.replace(t, f'<b style="color: red;">{t}</b>')
+            payload = payload.replace(t, f'<span style="font-weight: bold; color: red;">{t}</span>')
     payload = payload.replace("\r", "<br>")
     return payload
 
@@ -56,7 +57,7 @@ def process_files():
         body = Template("daily_report_mail_body.html")
         body.replace("THRESHOLD_HOURS", THRESHOLD_HOURS)
         body.replace("subject", subject)
-        payload = "\n\n".join([f'<hr>\n<h2 style="color: blue;">{file_name}:</h2>\n{logs}' for file_name, logs in all_reports])
+        payload = "\n\n".join([f'<hr>\n<h2 style="color: blue;">{file_name[:-6]}:</h2>\n{logs}' for file_name, logs in all_reports])
         body.replace("payload", augment_html_rendering(payload))
 
         send_mail(subject=subject, recipients_comma_separated=get_prop("skiplus_support"), body=str(body))
