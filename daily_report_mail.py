@@ -57,7 +57,7 @@ def process_files():
         body = Template("daily_report_mail_body.html")
         body.replace("THRESHOLD_HOURS", THRESHOLD_HOURS)
         body.replace("subject", subject)
-        summary = "".join([f'\n<li><span style="font-weight: bold;">{file_name[:-6]}</span></li>' for file_name, logs in all_reports])
+        summary = "".join([f'\n<li>{file_name[:-6]}</li>' for file_name, logs in all_reports])
         body.replace("summary", summary)
 
         payload = "\n\n".join([f'<hr>\n<h2 style="color: blue;">{file_name[:-6]}:</h2>\n{logs}' for file_name, logs in all_reports])
