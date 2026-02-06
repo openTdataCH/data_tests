@@ -53,7 +53,7 @@ def process_files():
                 all_reports.append((filename, logs))
 
     if True:  # all_reports:
-        subject = "data_tests: Daily Failures and Warnings Report"
+        subject = "data_tests: Daily Report of Exceptions, Failures and Warnings"
         body = Template("daily_report_mail_body.html")
         body.replace("THRESHOLD_HOURS", THRESHOLD_HOURS)
         body.replace("subject", subject)
