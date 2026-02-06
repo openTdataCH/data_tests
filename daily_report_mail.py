@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 
 from configuration import get_prop, CONFIG
 from utilities.mail_utilities import send_mail
+from utilities.template_utilities import Template
 
 THRESHOLD_HOURS = 32
 
@@ -42,12 +43,13 @@ def process_files():
 
     if True:  # all_reports:
         subject = "DataTests: Daily Errors Report"
-        body = f"DataTests had these errors in the last {THRESHOLD_HOURS} hours:\n"
+        body = Template("daily_report_mail_body.html")
+        body.replace("hours", THRESHOLD_HOURS)
+        body.replace("subject", subject)
+        payload = "\n\n".join([f"\n{'='*100}\n{file_name}:\n{logs}" for file_name, logs in all_reports])
+        body.replace("payload", payload)
 
-        body += "\n\n".join([f"\n{'='*100}\n{file_name}:\n{logs}"
-                            for file_name, logs in all_reports])
-
-        send_mail(subject, body, get_prop("skiplus_support"))
+        send_mail(subject=subject, recipients_comma_separated=get_prop("skiplus_support"), body=str(body))
 
 
 if __name__ == "__main__":
