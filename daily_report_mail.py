@@ -42,11 +42,13 @@ def process_files():
                 all_reports.append((filename, logs))
 
     if True:  # all_reports:
-        subject = "DataTests: Daily Errors Report"
+        subject = "data_tests: Daily Failures and Warnings Report"
         body = Template("daily_report_mail_body.html")
-        body.replace("hours", THRESHOLD_HOURS)
+        body.replace("THRESHOLD_HOURS", THRESHOLD_HOURS)
         body.replace("subject", subject)
         payload = "\n\n".join([f"\n{'='*100}\n{file_name}:\n{logs}" for file_name, logs in all_reports])
+        payload = payload.replace("\\n", "\n")
+        payload = payload.replace("\n", "<br>\n")
         body.replace("payload", payload)
 
         send_mail(subject=subject, recipients_comma_separated=get_prop("skiplus_support"), body=str(body))
