@@ -36,7 +36,7 @@ def augment_html_rendering(payload: str) -> str:
     payload = payload.replace("\n", "<br>\n")
     for token in ("warning", "failure", "error", "exception"):  # lowercase only
         for t in (token, token.upper(), token[0].upper() + token[1:]):
-            payload = payload.replace(token, f'<b style="color: red;">{t}</b>')
+            payload = payload.replace(t, f'<b style="color: red;">{t}</b>')
     payload = payload.replace("\r", "<br>")
     return payload
 
