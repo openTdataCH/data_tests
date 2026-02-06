@@ -16,7 +16,7 @@ def send_mail(subject: str, recipients_comma_separated: str, body: str) -> tuple
                        f"""<body>{body}</body></html>"""
 
             process = subprocess.Popen(
-                ['sendmail', '-t'],
+                ['/usr/sbin/sendmail', '-t'],
                 stdin=subprocess.PIPE,
                 universal_newlines=True
             )
