@@ -70,7 +70,7 @@ class DataTest():
         return condition
 
     def to_dict(self) -> dict:
-        self.log_info(f"Test report summary: EXCEPTIONS={len(self.exceptions)}, FAILURES={self.n_failures}, WARNINGS={self.n_warnings}.")
+        # silent:  self.log_info(f"Test report summary: EXCEPTIONS={len(self.exceptions)}, FAILURES={self.n_failures}, WARNINGS={self.n_warnings}.")
         return {
             "name": self.name,
             "logs": "\n".join(self.logs),
