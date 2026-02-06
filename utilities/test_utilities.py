@@ -7,6 +7,8 @@ Includes the definition of the DataTest class, which serves to handle a test wit
 import pytz
 from datetime import datetime as dt
 
+from utilities.template_utilities import Template
+
 
 def now_iso8601():
     return dt.now(pytz.timezone('Europe/Zurich')).isoformat()
@@ -23,6 +25,25 @@ def display_report_from_json(json_data: dict):
         s += f"    {log}\n"
     return s
 
+def _augment_html_rendering(payload: str) -> str:
+    payload.replace("\\n", "\n")
+    payload = payload.replace("\n", "<br>\n")
+    for token in ("warning", "failure", "error", "exception"):  # lowercase only
+        for t in (token, token.upper(), token[0].upper() + token[1:]):
+            payload = payload.replace(t, f'<span style="font-weight: bold; color: red;">{t}</span>')
+    payload = payload.replace("\r", "<br>")
+    return payload
+
+
+def html_report_from_json(json_data: dict):
+    logs = json_data.get("logs")
+    tr = Template("test_report_template")
+    if len(logs) > 0:
+        tr.replace("timestamp", logs[0:19])
+    for k in "name", "description", "exceptions", "n_exceptions", "n_failures", "n_warnings":
+        tr.replace(k, json_data.get(k))
+    tr.replace("logs", _augment_html_rendering(logs))
+    return str(tr)
 
 
 class DataTest():

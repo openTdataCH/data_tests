@@ -16,6 +16,8 @@ from utilities.template_utilities import Template
 
 import logging
 
+from utilities.test_utilities import html_report_from_json
+
 THRESHOLD_HOURS = 32
 
 LOG_FILE = os.path.join(CONFIG['folders']['logs'], "daily_report_mail.log")
@@ -40,16 +42,6 @@ def load_affected_test_reports(file_path):
     return affected_test_reports
 
 
-def augment_html_rendering(payload: str) -> str:
-    payload.replace("\\n", "\n")
-    payload = payload.replace("\n", "<br>\n")
-    for token in ("warning", "failure", "error", "exception"):  # lowercase only
-        for t in (token, token.upper(), token[0].upper() + token[1:]):
-            payload = payload.replace(t, f'<span style="font-weight: bold; color: red;">{t}</span>')
-    payload = payload.replace("\r", "<br>")
-    return payload
-
-
 def process_reports(body: Template):
     test_reports_folder = CONFIG['folders']['test_reports']
     for filename in [f[:-6] for f in os.listdir(test_reports_folder) if f.endswith('.jsonl')]:
@@ -58,14 +50,7 @@ def process_reports(body: Template):
         if len(affected_test_reports) > 0:
             body.append("payload", f"<h2>{filename}</h2>\n")
             for report in affected_test_reports:
-                logs = report.get("logs")
-                if len(logs) > 0:
-                    tr = Template("test_report_template")
-                    tr.replace("timestamp", logs[0:19])
-                    for k in "name", "description", "exceptions", "n_exceptions", "n_failures", "n_warnings":
-                        tr.replace(k, report.get(k))
-                    tr.replace("logs", augment_html_rendering(report.get("logs")))
-                    body.append("payload", tr)
+                body.append("payload", html_report_from_json(report))
 
 
 def process():
