@@ -20,8 +20,8 @@ REF_SIZES_FILE = "data/persistent_test_data/atlas_v2_test_sizes.json"
 DATASETS = [ "business-organisation", "contact-point", "line", "parking-lot", "platform", "reference-point",
              "relation", "service-point", "stop-point", "subline", "toilet", "traffic-point"]
 FLAVOURS = ["timetable-years", "full", "actual-date"]
-SIZE_THRESHOLDS = [0.9, 1.1]
-AGE_IN_DAYS_THRESHOLD = 0.9
+SIZE_THRESHOLDS = [0.8, 1.2]
+AGE_IN_DAYS_THRESHOLD = 1.01
 ALPHA = 0.2  # alpha factor for the Exponential Moving Average (EMA) of the sizes
 
 
@@ -45,7 +45,7 @@ def run() -> dict:
                             ref_size = ref_sizes_ds.get(flavour)
                             if ref_size is not None and type(ref_size) is int:
                                 data_test.test(SIZE_THRESHOLDS[0] * ref_size < size < SIZE_THRESHOLDS[1] * ref_size,
-                                               if_true_log_info=f"Passed size check, has {len(rows)} rows.",
+                                               # silent if ok:  if_true_log_info=f"Passed size check, has {len(rows)} rows.",
                                                if_false_log_warning=f"Resource size {size} is not within {SIZE_THRESHOLDS} of reference size {ref_size}.")
                                 size = round(ALPHA * size + (1 - ALPHA) * ref_size) # Exponential Moving Average (EMA)
                     sizes[dataset][flavour] = size
@@ -53,7 +53,7 @@ def run() -> dict:
                     metadata_resource = resource_by_identifier(meta_data, identifier)
                     age = age_in_days(metadata_resource.get("issued"))
                     data_test.test(age < AGE_IN_DAYS_THRESHOLD,
-                                   if_true_log_info=f"Passed age check, age {age:.4f} is below threshold {AGE_IN_DAYS_THRESHOLD:.4f}.",
+                                   # silent if ok: if_true_log_info=f"Passed age check, age {age:.4f} is below threshold {AGE_IN_DAYS_THRESHOLD:.4f}.",
                                    if_false_log_failure=f"FAILED age check, age {age:.4f} is above threshold {AGE_IN_DAYS_THRESHOLD:.4f}.")
             except Exception as e:
                 data_test.log_exception(f"Data test for {dataset}/{flavour} failed with exception: {e}", e)

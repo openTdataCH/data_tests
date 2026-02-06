@@ -15,14 +15,13 @@ def load_csv_from_url(url: str, data_test = None, delimiter =';', quotechar ='"'
     if data_test is None:
         data_test = DataTest(name="load_csv")
 
-    data_test.log_info(f"Calling {url} now...")
     headers = {}
     if key is not None:
         headers["Authorization"] = f"Bearer {key}"
 
     response = requests.get(url, headers=headers)
     size = len(response.content)
-    message = f"Response {response.status_code} with {len(response.content)} bytes, excerpt: {str(response.content)[0:200]}"
+    message = f"Response {response.status_code}, {len(response.content)} bytes, excerpt: {str(response.content)[0:30]}... for {url}"
     is_lt_400 = data_test.test(response.status_code < 400,
                                if_true_log_info=message,
                                if_false_log_failure=message)

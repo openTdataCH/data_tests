@@ -7,8 +7,8 @@ import platform
 import subprocess
 
 
-def send_mail(subject: str, recipients_comma_separated: str, body: str) -> None:
-    """On a linux system, using the built-in mail function, send an e-mail."""
+def send_mail(subject: str, recipients_comma_separated: str, body: str) -> tuple:
+    """On a linux system, using the built-in mail function, send an e-mail; returns exit code (0=success, 1=failure) and a short message."""
     if "linux" in platform.system().lower():
         try:
             message = f"""To: {recipients_comma_separated}\nSubject: {subject}\nContent-Type: text/html\n\n""" + \
@@ -26,18 +26,15 @@ def send_mail(subject: str, recipients_comma_separated: str, body: str) -> None:
 
             # Check if sendmail was successful
             if process.returncode != 0:
-                print("Failed to send email.")
+                return 1, f"send_mail() ERROR: Failed to send email, returncode: {process.returncode}."
             else:
-                print("Email sent successfully.")
+                return 0, f"Email sent successfully, subject: {subject}, {len(message)} bytes."
 
         except Exception as e:
-            print(f"An error occurred: {e}")
+            return 1, f"send_mail() ERROR: {e}"
     else:
-        print(f"WARN: This is not a Linux system, no mail function implemented, ignoring mail '{subject}'.")
-        print("Subject:", subject)
-        print("Body:")
-        print(body)
+        return 1, f"WARN: This is not a Linux system, no mail function implemented, ignoring mail '{subject}\n{recipients_comma_separated}\n{body}"
 
 
 if __name__ == "__main__":
-    send_mail("My Test", "markus.meier-trost@sbb.ch", """<h1 style="color: blue;">Hallo!</h1><p>Das ist <strong>rich</strong> text von Linux.</p>""")
+    print(send_mail("My Test", "markus.meier-trost@sbb.ch", """<h1 style="color: blue;">Hallo!</h1><p>Das ist <strong>rich</strong> text von Linux.</p>"""))
