@@ -20,6 +20,7 @@ CONFIG = {
         "persistent_test_data": "data/persistent_test_data",
         "html": "data/html",
         "logs": "data/logs",
+        "templates": "templates",
         "tests": "tests"
     }
 }
