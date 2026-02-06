@@ -31,6 +31,16 @@ def check_jsonl_file(file_path):
     return False, None
 
 
+def augment_html_rendering(payload: str) -> str:
+    payload.replace("\\n", "\n")
+    payload = payload.replace("\n", "<br>\n")
+    for token in ("warning", "failure", "error", "exception"):  # lowercase only
+        for t in (token, token.upper(), token[0].upper() + token[1:]):
+            payload = payload.replace(token, f'<b style="color: red;">{t}</b>')
+    payload = payload.replace("\r", "<br>")
+    return payload
+
+
 def process_files():
     all_reports = []
     test_reports_folder = CONFIG['folders']['test_reports']
@@ -46,10 +56,8 @@ def process_files():
         body = Template("daily_report_mail_body.html")
         body.replace("THRESHOLD_HOURS", THRESHOLD_HOURS)
         body.replace("subject", subject)
-        payload = "\n\n".join([f"\n{'='*100}\n{file_name}:\n{logs}" for file_name, logs in all_reports])
-        payload = payload.replace("\\n", "\n")
-        payload = payload.replace("\n", "<br>\n")
-        body.replace("payload", payload)
+        payload = "\n\n".join([f'<hr>\n<h2 style="color: blue;">{file_name}:</h2>\n{logs}' for file_name, logs in all_reports])
+        body.replace("payload", augment_html_rendering(payload))
 
         send_mail(subject=subject, recipients_comma_separated=get_prop("skiplus_support"), body=str(body))
 
