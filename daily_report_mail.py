@@ -17,7 +17,9 @@ from utilities.template_utilities import Template
 THRESHOLD_HOURS = 32
 
 
-def check_jsonl_file(file_path):
+def load_affected_test_reports(file_path):
+    """Load all test reports at the given path, for the given time range and having exceptions, failures or warnings."""
+    affected_test_reports = []
     with open(file_path, 'r') as f:
         for line in f:
             if line.strip().startswith("{"):
@@ -27,9 +29,10 @@ def check_jsonl_file(file_path):
                     if logs_timestamp > datetime.now() - timedelta(hours=THRESHOLD_HOURS):
                         n_exceptions = json_data.get('n_exceptions', 0)
                         n_failures = json_data.get('n_failures', 0)
-                        if n_exceptions > 0 or n_failures > 0:
-                            return True, json_data['logs']
-    return False, None
+                        n_warnings = json_data.get('n_warnings', 0)
+                        if n_exceptions > 0 or n_failures > 0 or n_warnings > 0:
+                            affected_test_reports.append(json_data)
+    return affected_test_reports
 
 
 def augment_html_rendering(payload: str) -> str:
@@ -42,29 +45,34 @@ def augment_html_rendering(payload: str) -> str:
     return payload
 
 
-def process_files():
-    all_reports = []
+def process_reports(body: Template):
     test_reports_folder = CONFIG['folders']['test_reports']
-    for filename in os.listdir(test_reports_folder):
-        if filename.endswith('.jsonl'):
-            file_path = os.path.join(test_reports_folder, filename)
-            valid, logs = check_jsonl_file(file_path)
-            if valid:
-                all_reports.append((filename, logs))
+    for filename in [f[:-6] for f in os.listdir(test_reports_folder) if f.endswith('.jsonl')]:
+        file_path = os.path.join(test_reports_folder, filename + ".jsonl")
+        affected_test_reports = load_affected_test_reports(file_path)
+        if len(affected_test_reports) > 0:
+            body.append("payload", f"<h2>{filename}</h2>\n")
+            for report in affected_test_reports:
+                logs = report.get("logs")
+                if len(logs) > 0:
+                    tr = Template("test_report_template")
+                    tr.replace("timestamp", logs[0:19])
+                    for k in "name", "description", "exceptions", "n_exceptions", "n_failures", "n_warnings":
+                        tr.replace(k, report.get(k))
+                    tr.replace("logs", augment_html_rendering(report.get("logs")))
+                    body.append("payload", tr)
 
-    if True:  # all_reports:
-        subject = "data_tests: Daily Report of Exceptions, Failures and Warnings"
-        body = Template("daily_report_mail_body.html")
-        body.replace("THRESHOLD_HOURS", THRESHOLD_HOURS)
-        body.replace("subject", subject)
-        summary = "".join([f'\n<li>{file_name[:-6]}</li>' for file_name, logs in all_reports])
-        body.replace("summary", summary)
 
-        payload = "\n\n".join([f'<hr>\n<h2 style="color: blue;">{file_name[:-6]}:</h2>\n{logs}' for file_name, logs in all_reports])
-        body.replace("payload", augment_html_rendering(payload))
+def process():
+    subject = "data_tests: Daily Report of Exceptions, Failures and Warnings"
+    body = Template("daily_report_mail_body.html")
+    body.replace("THRESHOLD_HOURS", THRESHOLD_HOURS)
+    body.replace("subject", subject)
 
-        send_mail(subject=subject, recipients_comma_separated=get_prop("skiplus_support"), body=str(body))
+    process_reports(body)
+
+    send_mail(subject=subject, recipients_comma_separated=get_prop("skiplus_support"), body=str(body))
 
 
 if __name__ == "__main__":
-    process_files()
+    process()
