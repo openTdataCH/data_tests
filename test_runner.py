@@ -1,24 +1,33 @@
-"""Script to run and manage any of the data_tests in the DATA_TESTS_FOLDER.
+"""Script to run and manage any of the tests in the tests subfolder.
 
 Can be called by a cron job, bash script or on the command line.
+In this way, runs as an independent Python application (OS process).
 
 These 2 arguments must be passed: 1. test name - 2. alert group (defined in the configuration.py)..
 
 The test runner does these main steps:
-1. imports and calls the desired test, passing the CONFIG dict, and waits for the repsonse.
-2. stores the test report at TEST_REPORTS_FOLDER.
-3. if the test has errors, it immediately sends an e-mail to the given alert group.
+1. imports the desired test, calls its run() method, passing the CONFIG dict to it
+2. waits for its repsonse, which should be a test report dict or TestReport object.
+3. stores the test report at TEST_REPORTS_FOLDER.
+4. if the test has errors, it immediately sends an e-mail to the given alert group.
 """
 
 import sys
+
 import copy
 import importlib
 import inspect
 import json
+import logging
+import os
 
 from configuration import get_prop, CONFIG
 from utilities.mail_utilities import send_mail
-from utilities.test_utilities import DataTest
+from utilities.template_utilities import Template
+from utilities.test_utilities import DataTest, html_report_from_json
+
+LOG_FILE = os.path.join(CONFIG['folders']['logs'], "test_runner.log")
+logging.basicConfig(handlers=[logging.FileHandler(LOG_FILE, 'a', 'utf-8')], level=logging.INFO, format='%(asctime)s: %(levelname)s: %(message)s')
 
 
 def get_commandline_arguments():
@@ -46,7 +55,9 @@ def import_and_run_test(test_name: str) -> dict:
         else:
             raise ValueError(f"No callable function 'run()' found in {test_module_path}, cannot run test.")
     except Exception as e:
-        test_report.log_exception(f"Test run of {test_name} failed with Exception: {str(e)}", exception=e)
+        error_message = f"Test run of {test_name} failed with Exception: {str(e)}"
+        test_report.log_exception(error_message, exception=e)
+        logging.error(error_message)
 
     test_report_dict = test_report.to_dict() if isinstance(test_report, DataTest) else dict(test_report)
 
@@ -69,14 +80,23 @@ def has_exceptions_or_failures(test_report: dict) -> bool:
 
 def if_errors_send_alert_mail(test_name: str, alert_group: str, test_report: dict):
     if has_exceptions_or_failures(test_report):
-        message_body = f"The test failed with exceptions and/or failures:\n{test_report.get('logs')}"
-        message_body = message_body.replace("\n", "<br>\n")
-        send_mail(f"AutomatedTests: test '{test_name}' has errors", get_prop(alert_group), message_body)
+        subject = f"data_tests: test '{test_name}' has errors or failures"
+        recipients = get_prop("skiplus_support")
+        body = Template("daily_report_mail_body.html")
+        body.replace("subject", subject).replace("name", test_name)
+        body.append("payload", html_report_from_json(test_report))
+        return_code, message = send_mail(subject, recipients, body)
+        if return_code != 0:
+            raise ConnectionError(f"send_mail() has an error: return_code={return_code}, message={message}!")
 
 
 if __name__ == "__main__":
     test_name, alert_group = get_commandline_arguments()
-    test_report = import_and_run_test(test_name)
-    store_test_report(test_name, test_report)
-    if_errors_send_alert_mail(test_name, alert_group, test_report)
-
+    logging.info(f"test_runner.py started with CL args {test_name}, {alert_group}.")
+    try:
+        test_report = import_and_run_test(test_name)
+        store_test_report(test_name, test_report)
+        if_errors_send_alert_mail(test_name, alert_group, test_report)
+        logging.info(f"test_runner.py finished.")
+    except Exception as e:
+        logging.error(f"test_runner.py failed with Exception: {str(e)}")
