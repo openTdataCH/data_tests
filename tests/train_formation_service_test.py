@@ -18,7 +18,7 @@ def run(config: dict = None) -> dict:
     key = config.get("key_train_formation_servce")
     headers = {"Authorization": "bearer " + key, "Content-Type": 'application/octet-stream'}
     evu = "SBBP"
-    train_number = "17909"
+    train_number = "556"
     operation_date = dt.now().isoformat()[:10]
     url = f"""https://api.opentransportdata.swiss/formation/v1/{ENDPOINTS[2]}?evu={evu}&operationDate={operation_date}""" + \
           f"""&trainNumber={train_number}"""
