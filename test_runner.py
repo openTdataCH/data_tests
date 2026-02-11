@@ -92,11 +92,11 @@ def if_errors_send_alert_mail(test_name: str, alert_group: str, test_report: dic
 
 if __name__ == "__main__":
     test_name, alert_group = get_commandline_arguments()
-    logging.info(f"test_runner.py started with CL args {test_name}, {alert_group}.")
+    logging.info(f"test_runner.py {test_name} {alert_group} - started.")
     try:
         test_report = import_and_run_test(test_name)
         store_test_report(test_name, test_report)
         if_errors_send_alert_mail(test_name, alert_group, test_report)
-        logging.info(f"test_runner.py finished.")
+        logging.info(f"test_runner.py {test_name} {alert_group} - finished.")
     except Exception as e:
-        logging.error(f"test_runner.py failed with Exception: {str(e)}")
+        logging.error(f"test_runner.py {test_name} {alert_group} - failed with Exception: {str(e)}")
