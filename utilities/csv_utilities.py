@@ -8,6 +8,7 @@ import requests
 
 from utilities.file_and_path_utilities import get_path
 from utilities.test_utilities import DataTest
+from utilities.string_utilities import strip_html_tags
 
 
 def load_csv_from_url(url: str, data_test = None, delimiter =';', quotechar ='"', key: str = None):
@@ -21,7 +22,8 @@ def load_csv_from_url(url: str, data_test = None, delimiter =';', quotechar ='"'
 
     response = requests.get(url, headers=headers)
     size = len(response.content)
-    message = f"Response {response.status_code}, {len(response.content)} bytes, excerpt: {str(response.content)[0:30]}... for {url}"
+    excerpt = strip_html_tags(response.content.decode('utf-8'))[0:50]
+    message = f"Response {response.status_code}, {len(response.content)} bytes, excerpt: {excerpt}... for {url}"
     is_lt_400 = data_test.test(response.status_code < 400,
                                if_true_log_info=message,
                                if_false_log_failure=message)

@@ -6,6 +6,7 @@ import json
 import requests
 
 from utilities.file_and_path_utilities import get_path
+from utilities.string_utilities import strip_html_tags
 from utilities.test_utilities import DataTest
 
 
@@ -20,7 +21,8 @@ def load_json(url: str, data_test = None, key: str = None, json_schema = None) -
 
     response = requests.get(url, headers=headers)
     size = len(response.content)
-    message = f"Response {response.status_code} with {len(response.content)} bytes, excerpt: {str(response.content)[0:200]}"
+    excerpt = strip_html_tags(response.content.decode('utf-8'))[0:200]
+    message = f"Response {response.status_code} with {len(response.content)} bytes, excerpt: {excerpt}..."
     is_lt_400 = data_test.test(response.status_code < 400, if_true_log_info=message, if_false_log_failure=message)
     if not is_lt_400:
         return {}, size, data_test

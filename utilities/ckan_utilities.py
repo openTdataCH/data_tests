@@ -6,6 +6,7 @@ import json
 import requests
 
 from configuration import get_prop
+from utilities.string_utilities import strip_html_tags
 from utilities.test_utilities import DataTest
 
 URL = "https://api.opentransportdata.swiss/ckan-api/package_show?id="
@@ -20,7 +21,8 @@ def load_ckan_package(package_name: str, test_report: DataTest = None) -> tuple:
 
     response = requests.get(URL + package_name, headers=headers)
     size = len(response.content)
-    message = f"Loaded CKAN metadata (package_show for {package_name} with {len(response.content)} bytes, status_code={response.status_code}, excerpt={response.content[0:200]})"
+    excerpt = strip_html_tags(response.content.decode('utf-8'))[0:200]
+    message = f"Loaded CKAN metadata (package_show for {package_name} with {len(response.content)} bytes, status_code={response.status_code}, excerpt={excerpt})"
     is_lt_400 = test_report.test(response.status_code < 400, if_true_log_info=message, if_false_log_failure=message)
     if not is_lt_400:
         return {}, size, test_report
