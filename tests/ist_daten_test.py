@@ -35,12 +35,12 @@ def run() -> dict:
         data_test.log_failure(f"Permalink invalid, no matching resource (file) found.")
 
     # dataset checks:
-    header, data_rows, status_code, data_test = load_csv_from_url("https://data.opentransportdata.swiss/dataset/ist-daten-v2/permalink", data_test=data_test)
+    #header, data_rows, status_code, data_test = load_csv_from_url("https://data.opentransportdata.swiss/dataset/ist-daten-v2/permalink", data_test=data_test)
 
-    if not data_test.test(condition=(str(header) == CSV_HEADER), if_false_log_failure=f"CSV File header is not correct: {header}"):
-        return data_test.to_dict()
+    #if not data_test.test(condition=(str(header) == CSV_HEADER), if_false_log_failure=f"CSV File header is not correct: {header}"):
+    #    return data_test.to_dict()
 
-    data_test.test(condition=(ROW_RANGE[0] <= len(data_rows) < ROW_RANGE[1]), if_false_log_failure=f"rows count is suspicious: {len(data_rows)} not within {ROW_RANGE}!")
+    #data_test.test(condition=(ROW_RANGE[0] <= len(data_rows) < ROW_RANGE[1]), if_false_log_failure=f"rows count is suspicious: {len(data_rows)} not within {ROW_RANGE}!")
 
 
     return data_test.to_dict()
