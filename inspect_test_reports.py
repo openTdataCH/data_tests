@@ -37,6 +37,6 @@ def inspect_test_reports(test_name: str, timestamp_iso8601: str):
 
 if __name__ == '__main__':
     test_name = sys.argv[1] if len(sys.argv) > 1 else ""
-    timestamp_iso8601 = int(sys.argv[2]) if len(sys.argv) > 2 else dt.now().isoformat()[:13]
+    timestamp_iso8601 = sys.argv[2] if len(sys.argv) > 2 else dt.now().isoformat()[:13]
     _print_header(f"INSPECT TEST REPORTS CONTAINING '{test_name}' AT DATE/TIME '{timestamp_iso8601}'")
     inspect_test_reports(test_name, timestamp_iso8601)
