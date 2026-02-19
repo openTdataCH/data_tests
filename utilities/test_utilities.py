@@ -48,17 +48,19 @@ def html_report_from_json(json_data: dict):
 
 class DataTest():
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, skip_logging_after: int = None):
         self.name = name
         self.logs = []
         self.n_warnings = 0
         self.n_failures = 0
         self.exceptions = []
         self.summary = "initial"
+        self.skip_logging_after = skip_logging_after
         self.log_info(f"Test '{self.name}' started.")
 
     def _log(self, text: str, level: str, exception = None):
-        self.logs.append(f"{now_iso8601()}: {level:9}: " + text)
+        if self.skip_logging_after is None or len(self.logs) <= self.skip_logging_after:
+            self.logs.append(f"{now_iso8601()}: {level:9}: " + text)
         if level == "WARNING":
             self.n_warnings += 1
         if level == "FAILURE":

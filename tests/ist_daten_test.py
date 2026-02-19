@@ -11,7 +11,7 @@ The run method requires no config at all (hence, no 'config' parameter).
 import requests
 
 from utilities.test_utilities import DataTest
-from utilities.csv_utilities import load_csv_from_url
+from utilities.csv_utilities import load_csv_from_url, load_csv_streaming_and_do_data_checks
 from utilities.ckan_utilities import load_ckan_package, resource_by_identifier
 from utilities.datetime_utilities import age_in_days
 
@@ -21,7 +21,7 @@ AGE_IN_DAYS_THRESHOLD = 1.01
 
 
 def run() -> dict:
-    data_test = DataTest(name="ist_daten_test")
+    data_test = DataTest(name="ist_daten_test", skip_logging_after=100)
 
     # CKAN metadata checks:
     ckan_data, size, data_test = load_ckan_package(f"ist-daten-v2", data_test)
@@ -36,17 +36,14 @@ def run() -> dict:
         data_test.log_failure(f"Permalink invalid, no matching resource (file) found.")
 
     # dataset checks:
-    response = requests.get("https://data.opentransportdata.swiss/dataset/ist-daten-v2/permalink")
-    if response.status_code >= 400:
-        data_test.log_failure(f"response has status code {response.status_code}.")
-        return data_test.to_dict()
-
-    header, data_rows, status_code, data_test = load_csv_from_url("https://data.opentransportdata.swiss/dataset/ist-daten-v2/permalink", data_test=data_test)
-
-    if not data_test.test(condition=(str(header) == CSV_HEADER), if_false_log_failure=f"CSV File header is not correct: {header}"):
-        return data_test.to_dict()
-
-    data_test.test(condition=(ROW_RANGE[0] <= len(data_rows) < ROW_RANGE[1]), if_false_log_failure=f"rows count is suspicious: {len(data_rows)} not within {ROW_RANGE}!")
+    COLUMN_HEADERS = "BETRIEBSTAG;FAHRT_BEZEICHNER;BETREIBER_ID;BETREIBER_ABK;BETREIBER_NAME;PRODUKT_ID;LINIEN_ID;LINIEN_TEXT;UMLAUF_ID;VERKEHRSMITTEL_TEXT;ZUSATZFAHRT_TF;FAELLT_AUS_TF;BPUIC;HALTESTELLEN_NAME;ANKUNFTSZEIT;AN_PROGNOSE;AN_PROGNOSE_STATUS;ABFAHRTSZEIT;AB_PROGNOSE;AB_PROGNOSE_STATUS;DURCHFAHRT_TF;SLOID".split(";")
+    COLUMN_RE_MATCHES = [
+        r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.20[234](\d{1})$"
+    ]
+    data_test = load_csv_streaming_and_do_data_checks(url="https://data.opentransportdata.swiss/dataset/ist-daten-v2/permalink",
+                                                      column_headers=COLUMN_HEADERS, column_re_matches=COLUMN_RE_MATCHES,
+                                                      line_count_range=ROW_RANGE,
+                                                      data_test=data_test)
 
     return data_test.to_dict()
 
