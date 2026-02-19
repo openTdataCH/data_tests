@@ -115,8 +115,8 @@ _UTF8_BOM = b"\xef\xbb\xbf"
 
 @contextmanager
 def https_lines_iterator(url: str, *, timeout: tuple[float, float] = (5.0, 30.0),
-    headers: dict | None = None, chunk_size: int = 8192,
-    encoding: str | None = None,   # e.g., "utf-8" to yield str; None yields bytes
+    headers: dict = None, chunk_size: int = 8192,
+    encoding: str = None,   # e.g., "utf-8" to yield str; None yields bytes
     errors: str = "strict",        # decoding error handling if encoding is set
     skip_empty: bool = False,      # skip blank lines (b"" / "")
     strip_bom: bool = True,        # remove UTF-8 BOM from first line
