@@ -17,7 +17,7 @@ def load_json(url: str, data_test = None, key: str = None, json_schema = None) -
     data_test.log_info(f"Calling {url} now...")
     headers = {}
     if key is not None:
-        headers["Authorization"] = f"Bearer {key}"
+        headers["Authorization"] = f"{key}"
 
     response = requests.get(url, headers=headers)
     size = len(response.content)
