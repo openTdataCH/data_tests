@@ -1,6 +1,5 @@
 """Test of the train formation service API.
 
-Markus Meier, 2026-01-12
 """
 
 import requests
@@ -13,7 +12,7 @@ ENDPOINTS = ("formations_vehicle_based", "formations_stop_based", "formations_fu
 
 
 
-def run(config: dict = None) -> dict:
+def run(config: dict = None):
     data_test = DataTest(name="train_formation_service_test")
     key = config.get("key_train_formation_servce")
     headers = {"Authorization": "bearer " + key, "Content-Type": 'application/octet-stream'}
@@ -27,7 +26,7 @@ def run(config: dict = None) -> dict:
     message = f"response status code: {response.status_code}, {len(response.content)} bytes"
     data_test.test(response.status_code < 400, if_true_log_info=message, if_false_log_failure=message)
 
-    return data_test.to_dict()
+    return data_test
 
 
 if __name__ == '__main__':

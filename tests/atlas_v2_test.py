@@ -30,8 +30,7 @@ def run() -> dict:
     ref_sizes = load_json_file(REF_SIZES_FILE)
     sizes = defaultdict(lambda : {})
     for dataset in DATASETS:
-        ckan_data, size, data_test = load_ckan_package(f"{dataset}-v2", data_test)
-        meta_data = ckan_data['result']
+        meta_data, size, data_test = load_ckan_package(f"{dataset}-v2", data_test)
         for i, flavour in enumerate(FLAVOURS):
             try:
                 region = "swiss-" if dataset == "service-point" else ("world-" if dataset == "traffic-point" else "")
@@ -60,7 +59,7 @@ def run() -> dict:
 
     save_json_file(REF_SIZES_FILE, sizes)
 
-    return data_test.to_dict()
+    return data_test
 
 
 if __name__ == '__main__':

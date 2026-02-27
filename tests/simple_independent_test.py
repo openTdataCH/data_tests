@@ -13,7 +13,7 @@ import io
 import requests
 import csv
 
-def run() -> dict:
+def run():
     test_report = {'name': 'simple_independent_test', 'n_warnings': 0, 'n_failures': 0, 'n_exceptions': 0, 'exceptions': [], "logs": ""}
 
     response = requests.get("https://data.opentransportdata.swiss/dataset/atzgf/resource_permalink/gf-datei-2025.csv")
