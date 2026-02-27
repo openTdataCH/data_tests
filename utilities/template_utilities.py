@@ -1,7 +1,7 @@
 """Support for simple templates.
 - Provides a class for handling templates such as XML files or XML fragments with placeholders.
 - Loads a file matching the given name (without extension).
-- looks for templates in folder ./data/templates   by default
+- looks for templates in folder ./templates   by default
 - using placeholders in double curly braces, like {{placeholder_name}}
 
 Usage example:
