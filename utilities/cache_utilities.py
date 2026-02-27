@@ -6,12 +6,14 @@ import os
 import shutil
 import pathlib
 
+from utilities.file_and_path_utilities import get_path
 
-CACHE_PATH = f'../data/persistent_test_data/'
+
+CACHE_PATH = f'data/persistent_test_data/'
 
 
 def load_json_from_cache_if_exists(directory: str, filename: str) -> dict:
-    dir_path = os.path.join(CACHE_PATH, directory)
+    dir_path = os.path.join(get_path(CACHE_PATH), directory)
     try:
         pathlib.Path(dir_path).mkdir(parents=True, exist_ok=True)
         file_path = os.path.join(dir_path, filename)
