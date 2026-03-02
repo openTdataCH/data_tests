@@ -74,8 +74,9 @@ for filename in os.listdir(CONFIG['folders']['test_reports']):
 
 # Generate HTML report
 html_content = '<html><head><title>Report</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="styles.css"></head><body>'
-html_content += f'<h1>data_tests_dashboard - Report for the Last {DAY_RANGE} Days</h1>'
-html_content += '<table border="1"><tr><th>File</th>'
+html_content += f'<h1>data_tests Dashboard</h1>'
+html_content += f"<p>Report for the last {DAY_RANGE} days, showing hours with all passed '🟢' tests, tests with warnings '🟡', failures '🟠' or errors/exceptions '🔴'. </p>"
+html_content += '<table border="1"><tr><th>Test</th>'
 
 # Create headers for both dates and hours
 for date in reversed(date_range):
@@ -90,7 +91,7 @@ html_content += '</tr>'
 
 # Fill table rows
 for file_name, file_data in report_data:
-    html_content += f'<tr><td>{file_name}</td>'
+    html_content += f'<tr><td><b>{file_name[:-6]}</b></td>'
 
     # Fill hourly status for each day
     for date in reversed(date_range):
