@@ -31,9 +31,9 @@ report_data = []
 # Define symbols for each status type
 def get_status_symbol(n_exceptions, n_failures, n_warnings):
     if n_exceptions > 0:
-        return '🔴'  # Red for exceptions
+        return '⚫️'  # Red for exceptions
     elif n_failures > 0:
-        return '🟠'  # Orange for failures
+        return '🔴'  # Orange for failures
     elif n_warnings > 0:
         return '🟡'  # Yellow for warnings
     else:
@@ -75,7 +75,7 @@ for filename in os.listdir(CONFIG['folders']['test_reports']):
 # Generate HTML report
 html_content = '<html><head><title>Report</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="styles.css"></head><body>'
 html_content += f'<h1>data_tests Dashboard</h1>'
-html_content += f"<p>Report for the last {DAY_RANGE} days, showing hours with all passed '🟢' tests, tests with warnings '🟡', failures '🟠' or errors/exceptions '🔴'. </p>"
+html_content += f"<p>Report for the last {DAY_RANGE} days, showing hours with all passed '🟢' tests, tests with warnings '🟡', failures '🔴' or errors/exceptions '⚫️'. </p>"
 html_content += '<table border="1"><tr><th>Test</th>'
 
 # Create headers for both dates and hours
