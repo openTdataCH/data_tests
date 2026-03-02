@@ -101,7 +101,7 @@ for file_name, file_data in report_data:
     html_content += '</tr>'
 
 html_content += '</table>'
-html_content += f'<p>Last updated: {datetime.now().isoformat()[:23]} - Home: <a href="https://opentransportdata.swiss">opentransportdata.swiss</a></p>'
+html_content += f'<p>Last updated: {datetime.now().isoformat()[:23]} - Github: <a href="https://github.com/openTdataCH/data_tests">github.com/openTdataCH/data_tests</a> - Home: <a href="https://opentransportdata.swiss">opentransportdata.swiss</a></p>'
 html_content += f'</body></html>'
 
 # Write to HTML file
