@@ -31,11 +31,6 @@ def get_prop(key):
     return CONFIG.get(key)
 
 
-# ensure that the folders and subfolders exist; create them if not:
-for folder_path in CONFIG["folders"].values():
-    os.makedirs(os.path.abspath(folder_path), exist_ok=True)
-
-
 # if there exists a local_configuration, it is used and may supersede some of the above constants.
 try:
     from local_configuration import *
