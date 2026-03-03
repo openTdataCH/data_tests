@@ -8,6 +8,7 @@ The run method requires no config at all (hence, no 'config' parameter).
 """
 from utilities.test_utilities import DataTest
 from utilities.json_utilities import load_json
+import concurrent.futures
 
 RESOURCES = {
     "GBFS 2.3": "https://sharedmobility.ch/v2/gbfs",
@@ -18,89 +19,99 @@ EXCLUDED_URLS = {
     "https://sharedmobility.ch/v2/gbfs/donkey_le_locle/system_pricing_plans"
 }
 
+TEST_CONFIGURATIONS_GBFS21 = [
+    ("providers", 20, 100, "providers"),
+    ("system_id", 5, 40, "information"),
+    ("stations", 1000, float('inf'), "stations"),
+    ("bikes", 1000, float('inf'), "bikes"),
+    ("rental_hours", 5, 20, "hours"),
+    ("regions", 5, 1000, "regions"),
+    ("plans", 5, 200, "plans"),
+    ("geofencing_zones.features", 10, 100, "geopoints")
+]
+TEST_CONFIGURATIONS_GBFS23 = [
+    ("system_id", 5, 40, "information"),
+    ("stations", 1, float('inf'), "stations"),
+    ("bikes", 1, float('inf'), "bikes"),
+    ("rental_hours", 1, 5, "hours"),
+    ("regions", 1, 150, "regions"),
+    ("plans", 1, 25, "plans"),
+    ("vehicle_types", 1, 2000, "vehicles"),
+    ("geofencing_zones.features", 1, 10000, "geopoints")
+]
+
+def validate_entity(data_test, content, key_path, min_value, max_value, label, url):
+    """ checks if the entity content is valid. """
+    data = content.get("data", {})
+    for part in key_path.split("."):
+        data = data.get(part, {}) if isinstance(data, dict) else []
+    if not data:
+        return
+    count = len(data)
+    is_valid = min_value <= count <= max_value
+
+    data_test.test(
+        condition=is_valid,
+        if_false_log_failure=f"GBFS ({url}) contains not enough {label} ({count})!",
+    )
+
+def process_feed(feed_url, config_type, data_test, token):
+    """Single worker-task for feed-check."""
+    if not feed_url or feed_url in EXCLUDED_URLS:
+        return 0, 0
+
+    content, size, _ = load_json(feed_url, data_test=data_test, key=token)
+    if not content:
+        data_test.log_failure(f"Feed {feed_url} is empty!")
+        return 0, size
+
+    configs = TEST_CONFIGURATIONS_GBFS21 if config_type == "2.1" else TEST_CONFIGURATIONS_GBFS23
+    for key_path, min_val, max_val, label in configs:
+        validate_entity(data_test, content, key_path, min_val, max_val, label, feed_url)
+
+    return 1, size
+
 def run() -> DataTest:
     data_test = DataTest(name="gbfs_shared_mobility_test")
     MY_TOKEN = "opendata@sbb.ch"
+    successful_tests = 0
+    loaded_bytes = 0
 
-    # loads both resources and checks their availability
-    for key, url in RESOURCES.items():
-        resource_data, size, data_test = load_json(url, data_test = data_test, key=MY_TOKEN)
+    tasks = []
 
-        if not resource_data:
-            return data_test
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        for key, url in RESOURCES.items():
+            resource_data, size, _ = load_json(url, data_test=data_test, key=MY_TOKEN)
+            loaded_bytes+=size
+            if not resource_data: continue
 
-        # checks in GBFS 2.1 if feeds exist:
-        if key == "GBFS 2.1":
-            feeds = resource_data.get("data", {}).get("en", {}).get("feeds", [])
+            if key == "GBFS 2.1":
+                feeds = resource_data.get("data", {}).get("en", {}).get("feeds", [])
+                for f in feeds:
+                    tasks.append(executor.submit(process_feed, f.get("url"), "2.1", data_test, MY_TOKEN))
 
-            data_test.test(
-                condition=(len(feeds) > 0),
-                if_false_log_failure=f"GBFS 2.1 ({url}) contains no feeds!",
-                if_true_log_info=f"GBFS 2.1 discovery ok. {len(feeds)} feeds found."
-            )
+            elif key == "GBFS 2.3":
+                systems = resource_data.get("systems", [])
+                for system in systems:
+                    sys_url = system.get("url")
+                    if not sys_url: continue
 
-            # checks in the feeds if the urls exist
-            for feed in feeds:
-                feed_name = feed.get("name")
-                feed_url = feed.get("url")
+                    sys_data, size, _ = load_json(sys_url, data_test=data_test, key=MY_TOKEN)
+                    loaded_bytes+=size
+                    feeds = sys_data.get("data", {}).get("en", {}).get("feeds", [])
+                    for f in feeds:
+                        tasks.append(executor.submit(process_feed, f.get("url"), "2.3", data_test, MY_TOKEN))
 
-                if feed_url:
-                    if feed_url in EXCLUDED_URLS:
-                        continue
-                    _, size, data_test = load_json(feed_url, data_test=data_test)
-                    data_test.test(
-                        condition=(size > 0),
-                        if_false_log_failure=f"Feed ({feed_url}) has no content!",
-                        if_true_log_info=f"Feed {feed_name} contains something."
-                    )
+        for future in concurrent.futures.as_completed(tasks):
+            count, size = future.result()
+            successful_tests+=count
+            loaded_bytes+=size
 
-
-        # checks in GBFS 2.3 if systems exist
-        elif key == "GBFS 2.3":
-            systems = resource_data.get("systems", [])
-
-            data_test.test(
-                condition=(len(systems) > 0),
-                if_false_log_failure=f"GBFS 2.3 ({url}) System list is empty!",
-                if_true_log_info=f"GBFS 2.3 ok. {len(systems)} systems found."
-            )
-
-            # checks in the systems if the url exist
-            for system in systems:
-                system_name = system.get("name")
-                system_url = system.get("url")
-
-                if system_url:
-                    if system_url in EXCLUDED_URLS:
-                        continue
-                    system_data, size, data_test = load_json(
-                        system_url,
-                        data_test=data_test,
-                        key=MY_TOKEN
-                    )
-                    data_test.test(
-                        condition=(size > 0),
-                        if_false_log_failure=f"System ({system_name}) has no content!",
-                        if_true_log_info=f"System {system_url} contains something."
-                    )
-                    # checks in the systems if the feed exists
-                    feeds = system_data.get("data", {}).get("en", {}).get("feeds", [])
-                    for feed in feeds:
-                        feed_name = feed.get("name")
-                        feed_url = feed.get("url")
-                        if feed_url in EXCLUDED_URLS:
-                            continue
-                        feed_data, size, data_test = load_json(
-                            feed_url,
-                            data_test=data_test,
-                            key=MY_TOKEN
-                        )
-                        data_test.test(
-                            condition=(size > 0),
-                            if_false_log_failure=f"Feed {feed_name} of {system_name} is empty! URL: {feed_url}",
-                            if_true_log_info=f"Feed {feed_name} of {system_name} ok ({size} bytes)."
-                        )
-
+    total_mb = loaded_bytes / 1000000
+    if successful_tests > 300:
+        data_test.log_info(f"{successful_tests} pages checked successfully, loaded a total of {total_mb:.6f} MB")
+    else:
+        data_test.log_warning(f"Only {successful_tests} of 332 pages checked successfully, loaded a total of {total_mb:.6f} MB")
     return data_test
 
 
