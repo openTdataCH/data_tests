@@ -6,7 +6,7 @@ In this way, runs as an independent Python application (OS process).
 These 2 arguments must be passed: 1. test name - 2. alert group (defined in the configuration.py)..
 
 The test runner does these main steps:
-1. imports the desired test, calls its run() method, passing the CONFIG dict to it
+1. imports the desired tests.py module, calls its run() method, passing the CONFIG and variant to it if available.
 2. waits for its repsonse, which should be a test report dict or TestReport object.
 3. stores the test report at TEST_REPORTS_FOLDER.
 4. if the test has errors, it immediately sends an e-mail to the given alert group.
@@ -40,22 +40,33 @@ def get_commandline_arguments():
     return test_name, alert_group
 
 
-def import_and_run_test(test_name: str) -> dict:
-    test_report = DataTest(test_name)
-    test_module_path = f"{CONFIG['folders']['tests']}.{test_name}"
+def import_and_run_test(name_and_variant: str) -> dict:
+    nv_list = name_and_variant.split("/")
+    name = nv_list[0] if len(nv_list) > 1 else name_and_variant
+    variant = nv_list[1] if len(nv_list) > 1 else None
+    normalized_name = f"{name}_{variant}" if variant else name
+    test_report = DataTest(normalized_name)
     try:
+        test_module_path = f"tests.{name}.tests"
         test_module = importlib.import_module(test_module_path)
         if hasattr(test_module, 'run') and callable(getattr(test_module, 'run')):
             test_run_function = getattr(test_module, 'run')
             signature = inspect.signature(test_run_function)
-            if 'config' in signature.parameters:  # if it has a config parameter, hand over the CONFIG to it.
-                test_report = test_run_function(config=copy.deepcopy(CONFIG))  # copy to avoid updates
-            else:  # if not, try to run the test anyway, without parameters.
-                test_report = test_run_function()
+            if 'config' in signature.parameters:
+                config_copy = copy.deepcopy(CONFIG)  # copy to avoid updates
+                if 'variant' in signature.parameters:
+                    test_report = test_run_function(config=config_copy, variant=variant)
+                else:
+                    test_report = test_run_function(config=config_copy)  # copy to avoid updates
+            else:
+                if 'variant' in signature.parameters:
+                    test_report = test_run_function(variant=variant)
+                else:
+                    test_report = test_run_function()
         else:
             raise ValueError(f"No callable function 'run()' found in {test_module_path}, cannot run test.")
     except Exception as e:
-        error_message = f"Test run of {test_name} failed with Exception: {str(e)}"
+        error_message = f"Test run of {name_and_variant} failed with Exception: {str(e)}"
         test_report.log_exception(error_message, exception=e)
         logging.error(error_message)
 

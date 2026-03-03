@@ -11,7 +11,7 @@ from utilities.test_utilities import DataTest
 
 
 def run():
-    data_test = DataTest(name="bike_and_car_parking_test")
+    data_test = DataTest(name="example_utility_based_test")
     header, rows, statuscode, data_test = load_csv_from_url("https://data.opentransportdata.swiss/dataset/atzgf/resource_permalink/gf-datei-2025.csv", data_test=data_test)
     # loads a CSV file which has 823 bytes and 36 rows
 

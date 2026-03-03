@@ -56,4 +56,3 @@ def _resource4permalink(meta_data: dict, permalink: str) -> dict:
 if __name__ == '__main__':
     tr = run()
     print(tr)
-    print(tr['logs'])

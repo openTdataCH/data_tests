@@ -16,7 +16,7 @@ from utilities.datetime_utilities import age_in_days
 from utilities.json_utilities import load_json_file, save_json_file
 from utilities.test_utilities import DataTest
 
-REF_SIZES_FILE = "data/persistent_test_data/atlas_v2_test_sizes.json"
+REF_SIZES_FILE = "tests/atlas_v2_tests/data/atlas_v2_test_sizes.json"
 DATASETS = [ "business-organisation", "contact-point", "line", "parking-lot", "platform", "reference-point",
              "relation", "service-point", "stop-point", "subline", "toilet", "traffic-point"]
 FLAVOURS = ["timetable-years", "full", "actual-date"]

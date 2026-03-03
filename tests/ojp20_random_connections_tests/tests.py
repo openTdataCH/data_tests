@@ -18,20 +18,22 @@ Requires a file config.json in folder tests/data/ojp20_random_connections_test l
 
 import time
 
+import os
+import random
 import requests
 from datetime import datetime as dt
-import random
 
-from utilities.cache_utilities import load_json_from_cache_if_exists
+from utilities.json_utilities import load_json_file
 from utilities.test_utilities import DataTest
 
 session = requests.session()
 NOW = dt.now().isoformat()
+module_path = os.path.abspath(__file__)
 
 def run():
     name = "ojp20_random_connections_test"
     data_test = DataTest(name=name)
-    config = load_json_from_cache_if_exists(name, "config.json")
+    config = load_json_file("tests/ojp20_random_connections_tests/data/config.json")
     if config is None:
         raise ValueError("config.json not found, test terminated.")
     headers = {"Authorization": f"Bearer {config.get('tyk_key')}", "Content-Type": f"application/xml; charset=utf-8"}
@@ -49,7 +51,6 @@ def run():
             destin_ref = random.choice(stops_ids)
             if destin_ref != origin_ref:
                 break
-
 
         tr = OJP_TR_TEMPLATE.strip().replace("{{timestamp}}", NOW + "+02:00")
         tr = tr.replace("{{origin_ref}}", origin_ref).replace("{{origin_name}}", stops[origin_ref])
@@ -70,7 +71,7 @@ def run():
 
     data_test.log_info(f"Performed {number_of_tests}, of which {count200} with 200 in {t:0.3f} seconds.")
     if t / number_of_tests > warning_threshold_sec_per_test:
-        data_test.log_warning(f"Test time of {t/number_of_tests:.3f} exceded {warning_threshold_sec_per_test:.3f} threshold.")
+        data_test.log_warning(f"Test time of {t/number_of_tests:.3f} sec. exceded {warning_threshold_sec_per_test:.3f} sec. threshold.")
 
     return data_test
 
@@ -81,7 +82,7 @@ OJP_TR_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
     <OJPRequest>
         <siri:ServiceRequest>
             <siri:RequestTimestamp>{{timestamp}}</siri:RequestTimestamp>
-            <siri:RequestorRef>ski-1886-test</siri:RequestorRef>
+            <siri:RequestorRef>SKI+/data_tests/ojp20_random_connections_tests</siri:RequestorRef>
             <OJPTripRequest>
                 <siri:RequestTimestamp>{{timestamp}}</siri:RequestTimestamp>
                 <Origin>

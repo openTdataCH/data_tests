@@ -1,4 +1,4 @@
-"""Test of the CKAN data catalog of opentransportdata.swiss, including harvesters.
+"""Tests of the CKAN data catalog of opentransportdata.swiss, including harvesters.
 Doing some basic checks on many datasets and harvesters, about things that frequently go wrong:
 - harvesters: check if latest job not "finished" and older than 15 minutes: ["status"]["last_job"]["created"] und ["status"]["last_job"]["status"] (!="Finished")
 - harvesters: check if those of type "MANUAL" and having note "cron" were run in the last 24 h.
@@ -11,15 +11,16 @@ In case of failures, provide helpful messages for fixing the problem.
 from utilities.ckan_utilities import load_ckan_package_list, load_ckan_package
 from utilities.test_utilities import DataTest
 from utilities.datetime_utilities import age_in_days
-from utilities.cache_utilities import load_json_from_cache_if_exists, save_json_to_cache
+from utilities.json_utilities import load_json_file, save_json_file
 from datetime import datetime as dt, timezone, timedelta
 
 
 NOW = dt.now(timezone.utc)
+DS_PATH = "tests/ckan_health_tests/data/datasets.json"
 
 
 def get_datasets(data_test: DataTest) -> list:
-    ds = load_json_from_cache_if_exists("ckan_health_test", "datasets.json")
+    ds = load_json_file(DS_PATH)
     if ds is not None:
         return ds
     else:
@@ -30,12 +31,13 @@ def get_datasets(data_test: DataTest) -> list:
                 package_metadata, _, _ = load_ckan_package(package, data_test)
                 if package_metadata.get('type') == "dataset":
                     ds.append(package)
-            save_json_to_cache("ckan_health_test", "datasets.json", ds)
+            save_json_file(DS_PATH, ds)
             data_test.log_info(f"Loaded datasets list with {len(ds)} datasets and saved to cache.")
             return ds
         except Exception as e:
             data_test.log_exception(f"get_datasets failed witth {str(e)}", e)
             return None
+
 
 EXCLUDED_NON_DAILY_CRONS = ('gtfs2020-harvester', )
 
@@ -126,7 +128,7 @@ def check_datasets_permalink_and_age(datasets: list, data_test: DataTest):
             ds_metadata, _, _ = load_ckan_package(dataset, data_test)
 
             resources = ds_metadata.get("resources")
-            min_age = 99999999.99
+            min_age = 999999.9
             latest_resource_permalink = None
             for resource in resources:
                 age_of_resource = age_in_days(resource.get('created'))

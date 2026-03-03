@@ -33,4 +33,3 @@ if __name__ == '__main__':
     from configuration import CONFIG
     tr = run(config=CONFIG)
     print(tr)
-    print(tr['logs'])

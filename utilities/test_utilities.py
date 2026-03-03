@@ -56,7 +56,7 @@ class DataTest():
         self.exceptions = []
         self.summary = "initial"
         self.skip_logging_after = skip_logging_after
-        self.log_info(f"Test '{self.name}' started.")
+        self.log_info(f"Tests '{self.name}' started.")
 
     def _log(self, text: str, level: str, exception = None):
         if self.skip_logging_after is None or len(self.logs) <= self.skip_logging_after:
