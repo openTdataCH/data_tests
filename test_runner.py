@@ -19,14 +19,13 @@ import importlib
 import inspect
 import json
 import logging
-import os
 
 from configuration import get_prop, CONFIG
 from utilities.mail_utilities import send_mail
 from utilities.template_utilities import Template
 from utilities.test_utilities import DataTest, html_report_from_json
 
-LOG_FILE = os.path.join(CONFIG['folders']['logs'], "test_runner.log")
+LOG_FILE = "data/logs/test_runner.log"
 logging.basicConfig(handlers=[logging.FileHandler(LOG_FILE, 'a', 'utf-8')], level=logging.INFO, format='%(asctime)s: %(levelname)s: %(message)s')
 
 
@@ -34,10 +33,10 @@ def get_commandline_arguments():
     if len(sys.argv) < 2:
         raise ValueError("run_test.py requires 2 parameters: test name and alert group.")
 
-    test_name = sys.argv[1]
-    test_name = test_name[:-3] if test_name.endswith(".py") else test_name
+    name_and_variant = sys.argv[1]
+    name_and_variant = name_and_variant[:-3] if name_and_variant.endswith(".py") else name_and_variant
     alert_group = sys.argv[2]
-    return test_name, alert_group
+    return name_and_variant, alert_group
 
 
 def import_and_run_test(name_and_variant: str) -> dict:
@@ -75,8 +74,8 @@ def import_and_run_test(name_and_variant: str) -> dict:
     return test_report_dict
 
 
-def store_test_report(test_name: str, test_report: dict):
-    path = f"{CONFIG['folders']['test_reports']}/{test_name}.jsonl"
+def store_test_report(name_and_variant: str, test_report: dict):
+    path = f"data/test_reports/{name_and_variant.replace('/', '_')}.jsonl"
     with open(path, "a", encoding='utf-8') as f:
         f.write('\n' + json.dumps(test_report, ensure_ascii=False))
 
@@ -89,12 +88,12 @@ def has_exceptions_or_failures(test_report: dict) -> bool:
     return False
 
 
-def if_errors_send_alert_mail(test_name: str, alert_group: str, test_report: dict):
+def if_errors_send_alert_mail(name_and_variant: str, alert_group: str, test_report: dict):
     if has_exceptions_or_failures(test_report):
-        subject = f"data_tests: test '{test_name}' has errors or failures"
+        subject = f"data_tests: test '{name_and_variant}' has errors or failures"
         recipients = get_prop("skiplus_support")
         body = Template("daily_report_mail_body.html")
-        body.replace("subject", subject).replace("name", test_name)
+        body.replace("subject", subject).replace("name", name_and_variant)
         body.append("payload", html_report_from_json(test_report))
         return_code, message = send_mail(subject, recipients, body)
         if return_code != 0:
@@ -102,12 +101,12 @@ def if_errors_send_alert_mail(test_name: str, alert_group: str, test_report: dic
 
 
 if __name__ == "__main__":
-    test_name, alert_group = get_commandline_arguments()
-    logging.info(f"test_runner.py {test_name} {alert_group} - started.")
+    name_and_variant, alert_group = get_commandline_arguments()
+    logging.info(f"test_runner.py {name_and_variant} {alert_group} - started.")
     try:
-        test_report = import_and_run_test(test_name)
-        store_test_report(test_name, test_report)
-        if_errors_send_alert_mail(test_name, alert_group, test_report)
-        logging.info(f"test_runner.py {test_name} {alert_group} - finished.")
+        test_report = import_and_run_test(name_and_variant)
+        store_test_report(name_and_variant, test_report)
+        if_errors_send_alert_mail(name_and_variant, alert_group, test_report)
+        logging.info(f"test_runner.py {name_and_variant} {alert_group} - finished.")
     except Exception as e:
-        logging.error(f"test_runner.py {test_name} {alert_group} - failed with Exception: {str(e)}")
+        logging.error(f"test_runner.py {name_and_variant} {alert_group} - failed with Exception: {str(e)}")

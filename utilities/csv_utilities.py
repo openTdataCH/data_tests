@@ -41,11 +41,11 @@ def load_csv_from_url(url: str, data_test = None, delimiter =';', quotechar ='"'
     return header, data_rows, response.status_code, data_test
 
 
-def load_csv_from_file(relative_path: str) -> list[list]:
+def load_csv_from_file(relative_path: str, delimiter=';') -> list[list]:
     """Load a CSV file from the given relative path, respective the project root directory; returns None if failed."""
     try:
         with open(get_path(relative_path), newline='', encoding='utf-8') as csvfile:
-            reader = csv.reader(csvfile)
+            reader = csv.reader(csvfile, delimiter=delimiter)
             data = [row for row in reader]
         return data
     except Exception:
