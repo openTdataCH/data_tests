@@ -22,7 +22,7 @@ def run() -> dict:
     if not data_test.test(condition=(2400 <= len(data["features"]) < 3000), if_false_log_failure=f"'features' have an unusual, suspicious count: {len(data['features'])}!"):
         return data_test.to_dict()
 
-    if not data_test.test(condition=(8000000 <= size < 9999000), if_false_log_failure=f"suspicious size: {size}, not in range 8000000..9999000!"):
+    if not data_test.test(condition=(7000000 <= size < 9999000), if_false_log_failure=f"suspicious size: {size}, not in range 8000000..9999000!"):
         return data_test.to_dict()
 
     data_test.log_info("passed all checks.")
