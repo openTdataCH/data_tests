@@ -46,7 +46,7 @@ def import_and_run_test(name_and_variant: str) -> dict:
     normalized_name = f"{name}_{variant}" if variant else name
     test_report = DataTest(normalized_name)
     try:
-        test_module_path = f"tests.{name}.tests"
+        test_module_path = f"tests.{name}.test"
         test_module = importlib.import_module(test_module_path)
         if hasattr(test_module, 'run') and callable(getattr(test_module, 'run')):
             test_run_function = getattr(test_module, 'run')
