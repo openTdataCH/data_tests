@@ -64,7 +64,7 @@ def run():
         t += dt
         response_str = response.content.decode('utf-8')
         if response.status_code != 200:
-            data_test.log_failure(f"Test failed with status code {response.status_code}: {response_str[:200]}...")
+            data_test.log_failure(f"Test {origin_ref}/{stops[origin_ref]}->{destin_ref}/{stops[destin_ref]} failed with status code {response.status_code}, excerpt: {response_str[:300]}...")
         else:
             count200 += 1
         #    data_test.log_info(f"Test succeeded: {stops[origin_ref]}->{stops[destin_ref]}, {len(response.content)} bytes, status={response.status_code}: {response_str[:20]}...")
