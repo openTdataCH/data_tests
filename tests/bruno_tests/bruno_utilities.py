@@ -82,7 +82,7 @@ class BrunoRunner:
                 raw_token = token_match.group(1).strip()
                 token_value = self.replace_vars(raw_token, env_vars)
                 if "{{" in token_value:
-                    self.data_test.log_warning(f"Token-Variable wurde NICHT ersetzt: {token_value}")
+                    self.data_test.log_warning(f"Token-Variable was not replaced: {token_value}")
 
                 headers["Authorization"] = f"Bearer {token_value}"
 
