@@ -10,7 +10,7 @@ The run method requires no config at all (hence, no 'config' parameter).
 import json
 
 from utilities.test_utilities import DataTest
-from utilities.bruno_utilities import BrunoRunner
+from tests.bruno_tests.bruno_utilities import BrunoRunner
 import os
 from utilities.file_and_path_utilities import get_path
 
