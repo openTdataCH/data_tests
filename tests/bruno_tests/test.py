@@ -16,7 +16,8 @@ from utilities.file_and_path_utilities import get_path
 
 RESOURCES = {
     "OJP2.0": get_path("tests/bruno_tests/collection/OJP_2.0_2026_01"),
-    "OJP1.0": get_path("tests/bruno_tests/collection/OJP_1.0_2026_01")
+    "OJP1.0": get_path("tests/bruno_tests/collection/OJP_1.0_2026_01"),
+    "OJP1.0_Sample": get_path("tests/bruno_tests/collection/sample_test")
 }
 
 def load_bruno_env(file_path: str, env_name: str) -> dict:
@@ -68,16 +69,16 @@ def get_all_bru_files(directory: str) -> list:
     bru_files.sort()
     return bru_files
 
-def run(test_variant: str = None) -> DataTest:
-    data_test = DataTest(name=f"bruno_test_{test_variant}" if test_variant else "bruno_test_all")
+def run(variant: str = None) -> DataTest:
+    data_test = DataTest(name=f"bruno_test_{variant}" if variant else "bruno_test_all")
 
     env_file = get_path("tests/bruno_tests/variables/bruno-global-environments.json")
 
-    if test_variant:
-        if test_variant in RESOURCES:
-            selected_resources = {test_variant: RESOURCES[test_variant]}
+    if variant:
+        if variant in RESOURCES:
+            selected_resources = {variant: RESOURCES[variant]}
         else:
-            data_test.log_failure(f"Fehler: Version '{test_variant}' nicht in RESOURCES gefunden.")
+            data_test.log_failure(f"Fehler: Version '{variant}' nicht in RESOURCES gefunden.")
             return data_test
     else:
         selected_resources = RESOURCES
@@ -109,7 +110,7 @@ def run(test_variant: str = None) -> DataTest:
                 test_amount += 1
 
                 if not data:
-                    data_test.log_warning(f"[FAILED] {file_path}")
+                    data_test.log_failure(f"[FAILED] {file_path}")
             except Exception as e:
                 data_test.log_failure(f"Critical error executing {file_path}: {str(e)}")
 
@@ -120,6 +121,5 @@ def run(test_variant: str = None) -> DataTest:
     return data_test
 
 if __name__ == '__main__':
-    tr = run(test_variant="OJP1.0")
+    tr = run(variant="OJP1.0_Sample")
     print(tr)
-    print(tr.to_dict())
