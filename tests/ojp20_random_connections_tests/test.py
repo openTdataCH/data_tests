@@ -28,7 +28,12 @@ from utilities.test_utilities import DataTest
 
 session = requests.session()
 NOW = dt.now().isoformat()
-module_path = os.path.abspath(__file__)
+CONN_LOG_FILE = "tests/ojp20_random_connections_tests/data/ojp20_random_connections_test_conn_log.txt"
+
+
+def _timestamp():
+    return dt.now().isoformat()[:23]
+
 
 def run():
     name = "ojp20_random_connections_test"
@@ -43,35 +48,44 @@ def run():
     warning_threshold_sec_per_test = config['warning_threshold_sec_per_test']
     count200 = 0
     t = 0.0
-    for i in range(0, number_of_tests):
-        time.sleep(config['sleep_time'])
+    with open(CONN_LOG_FILE, mode='a', encoding='utf-8') as conn_log:
+        conn_log.write(f"{'_'*200}\n{_timestamp()} Running data_test '{name}', {number_of_tests} random TR connections:\n")
+        for i in range(0, number_of_tests):
+            time.sleep(config['sleep_time'])
 
-        origin_ref = random.choice(stops_ids)
-        while True:
-            destin_ref = random.choice(stops_ids)
-            if destin_ref != origin_ref:
-                break
+            origin_ref = random.choice(stops_ids)
 
-        tr = OJP_TR_TEMPLATE.strip().replace("{{timestamp}}", NOW + "+02:00")
-        tr = tr.replace("{{origin_ref}}", origin_ref).replace("{{origin_name}}", stops[origin_ref])
-        tr = tr.replace("{{destin_ref}}", destin_ref).replace("{{destin_name}}", stops[destin_ref])
-        tr = tr.replace("{{arrdep}}", NOW[:16] + ":00Z")
-        body_bytes = str(tr).encode('utf-8')
-        url = "https://api.opentransportdata.swiss/ojp20"
-        t0 = time.time()
-        response = session.post(url, data=body_bytes, headers=headers)
-        dt = time.time() - t0
-        t += dt
-        response_str = response.content.decode('utf-8')
-        if response.status_code != 200:
-            data_test.log_failure(f"Test {origin_ref}/{stops[origin_ref]}->{destin_ref}/{stops[destin_ref]} failed with status code {response.status_code}, excerpt: {response_str[:300]}...")
-        else:
-            count200 += 1
-        #    data_test.log_info(f"Test succeeded: {stops[origin_ref]}->{stops[destin_ref]}, {len(response.content)} bytes, status={response.status_code}: {response_str[:20]}...")
+            origin_ref = "8590681"
+            while True:
+                destin_ref = random.choice(stops_ids)
+                if destin_ref != origin_ref:
+                    break
 
-    data_test.log_info(f"Performed {number_of_tests}, of which {count200} with 200 in {t:0.3f} seconds.")
-    if t / number_of_tests > warning_threshold_sec_per_test:
-        data_test.log_warning(f"Test time of {t/number_of_tests:.3f} sec. exceded {warning_threshold_sec_per_test:.3f} sec. threshold.")
+            tr = OJP_TR_TEMPLATE.strip().replace("{{timestamp}}", NOW + "+02:00")
+            tr = tr.replace("{{origin_ref}}", origin_ref).replace("{{origin_name}}", stops[origin_ref])
+            tr = tr.replace("{{destin_ref}}", destin_ref).replace("{{destin_name}}", stops[destin_ref])
+            tr = tr.replace("{{arrdep}}", NOW[:16] + ":00Z")
+            body_bytes = str(tr).encode('utf-8')
+            url = "https://api.opentransportdata.swiss/ojp20"
+            t0 = time.time()
+            response = session.post(url, data=body_bytes, headers=headers)
+            delta_t = time.time() - t0
+            t += delta_t
+            response_str = response.content.decode('utf-8')
+
+            excerpt = response_str[:50] if response.status_code == 200 else response_str[:500]
+            excerpt = excerpt.replace("\n", " ").replace("\r", " ")
+            conn_log.write(f'{_timestamp()} {origin_ref} {stops[origin_ref]:30}-> {destin_ref} {stops[destin_ref]:30}: {delta_t:.3f} sec.,{len(response.content):>9} bytes, status={response.status_code}, excerpt={excerpt}...\n')
+
+            if response.status_code != 200:
+                data_test.log_failure(f"Test {origin_ref}/{stops[origin_ref]}->{destin_ref}/{stops[destin_ref]} failed with status code {response.status_code}, excerpt: {response_str[:300]}...")
+            else:
+                count200 += 1
+            #    data_test.log_info(f"Test succeeded: {stops[origin_ref]}->{stops[destin_ref]}, {len(response.content)} bytes, status={response.status_code}: {response_str[:20]}...")
+
+        data_test.log_info(f"Performed {number_of_tests}, of which {count200} with 200 in {t:0.3f} seconds.")
+        if t / number_of_tests > warning_threshold_sec_per_test:
+            data_test.log_warning(f"Test time of {t/number_of_tests:.3f} sec. exceded {warning_threshold_sec_per_test:.3f} sec. threshold.")
 
     return data_test
 
