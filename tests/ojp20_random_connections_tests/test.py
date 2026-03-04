@@ -52,10 +52,7 @@ def run():
         conn_log.write(f"{'_'*200}\n{_timestamp()} Running data_test '{name}', {number_of_tests} random TR connections:\n")
         for i in range(0, number_of_tests):
             time.sleep(config['sleep_time'])
-
             origin_ref = random.choice(stops_ids)
-
-            origin_ref = "8590681"
             while True:
                 destin_ref = random.choice(stops_ids)
                 if destin_ref != origin_ref:
