@@ -13,7 +13,7 @@ from utilities.string_utilities import strip_html_tags
 from utilities.test_utilities import DataTest
 
 
-def load_csv_from_url(url: str, data_test = None, delimiter =';', quotechar ='"', key: str = None):
+def load_csv_from_url(url: str, data_test = None, delimiter =';', quotechar ='"', key: str = None, silent=False):
     """Load a CSV file from a URL (permalink); returns a header (list), data rows (list), size (int) nd test report, as a tuple."""
     if data_test is None:
         data_test = DataTest(name="load_csv")
@@ -26,10 +26,11 @@ def load_csv_from_url(url: str, data_test = None, delimiter =';', quotechar ='"'
     size = len(response.content)
     excerpt = strip_html_tags(response.content.decode('utf-8'))[0:50]
     message = f"Response {response.status_code}, {len(response.content)} bytes, excerpt: {excerpt}... for {url}"
-    is_lt_400 = data_test.test(response.status_code < 400,
-                               if_true_log_info=message,
-                               if_false_log_failure=message)
-    if not is_lt_400:
+    if response.status_code < 400:
+        if not silent:
+            data_test.log_info(message)
+    else:
+        data_test.log_failure(message)
         return [], [], size, data_test
 
     encoding = 'utf-8-sig' if response.content.startswith(b'\xef\xbb\xbf') else 'utf-8'
