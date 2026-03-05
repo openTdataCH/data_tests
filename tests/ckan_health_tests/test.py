@@ -155,8 +155,8 @@ def run(config: dict = None):
     data_test = DataTest(name="ckan_health_test")
     packages, data_test = load_ckan_package_list(data_test)
 
-    #harvesters = [h for h in packages if 'harvester' in h]
-    #check_harvesters(harvesters, data_test)
+    harvesters = [h for h in packages if 'harvester' in h]
+    check_harvesters(harvesters, data_test)
 
     datasets = get_datasets(data_test)
     check_datasets_permalink_and_age(datasets, data_test)
