@@ -53,6 +53,7 @@ class DataTest():
         self.logs = []
         self.n_warnings = 0
         self.n_failures = 0
+        self.n_exceptions = 0
         self.exceptions = []
         self.summary = "initial"
         self.skip_logging_after = skip_logging_after
@@ -67,6 +68,7 @@ class DataTest():
             self.n_failures += 1
         if exception:
             self.exceptions.append(exception)
+            self.n_exceptions += 1
 
     def log_info(self, text: str, summary = None):
         self._log(text, level='info')
