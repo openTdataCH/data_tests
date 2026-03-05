@@ -56,7 +56,7 @@ def check_harvesters(harvesters: list, data_test: DataTest):
         if last_job_age > 1.0 and frequency == "MANUAL" and "cron" in notes_lc:
             data_test.log_failure(f"CKAN missed cron run? '{harvester}' age is {last_job_age:.4f} days!")
             count_too_old += 1
-    data_test.log_info(f"CKAN harvester tests: Checked {len(harvesters)}: {count_hanging} hanging, {count_too_old} older > 1 day.")
+    data_test.log_info(f"CKAN harvester tests: Checked {len(harvesters)}: {count_hanging} hanging, {count_too_old} older than a day.")
 
 
 EXCLUDED_DATASETS = ('business-organisations', 'formations', 'gtfsrt', 'gtfs-sa', 'halte', 'hrdf_test_207',
