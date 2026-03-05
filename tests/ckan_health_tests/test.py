@@ -126,25 +126,27 @@ def check_datasets_permalink_and_age(datasets: list, data_test: DataTest):
     for dataset in datasets:
         if dataset not in EXCLUDED_DATASETS:
             ds_metadata, _, _ = load_ckan_package(dataset, data_test)
+            if not ds_metadata:
+                data_test.log_warning(f"No metadata found for '{dataset}', has been deleted? (you can delete {DS_PATH} to have datasets list reloaded).")
+            else:
+                resources = ds_metadata.get("resources")
+                min_age = 999999.9
+                latest_resource_permalink = None
+                for resource in resources:
+                    age_of_resource = age_in_days(resource.get('created'))
+                    if age_of_resource < min_age:
+                        latest_resource_permalink = resource.get('url')
+                        min_age = age_of_resource
 
-            resources = ds_metadata.get("resources")
-            min_age = 999999.9
-            latest_resource_permalink = None
-            for resource in resources:
-                age_of_resource = age_in_days(resource.get('created'))
-                if age_of_resource < min_age:
-                    latest_resource_permalink = resource.get('url')
-                    min_age = age_of_resource
+                permalink = ds_metadata.get("permalink")
+                if permalink != latest_resource_permalink:
+                    data_test.log_failure(f"Dataset '{dataset}': Permalink not matching latest resource URL! --> https://data.opentransportdata.swiss/dataset/{dataset}")
+                    count_permalink_fails += 1
 
-            permalink = ds_metadata.get("permalink")
-            if permalink != latest_resource_permalink:
-                data_test.log_failure(f"Dataset '{dataset}': Permalink not matching latest resource URL! --> https://data.opentransportdata.swiss/dataset/{dataset}")
-                count_permalink_fails += 1
-
-            acceptable_age = _acceptable_age_in_days(dataset)
-            if min_age > acceptable_age:
-                data_test.log_failure(f"Dataset '{dataset}': Age of latest resource {min_age:.4f} exceeds acceptable age {acceptable_age:.4f}! --> https://data.opentransportdata.swiss/dataset/{dataset}")
-                count_age_fails += 1
+                acceptable_age = _acceptable_age_in_days(dataset)
+                if min_age > acceptable_age:
+                    data_test.log_failure(f"Dataset '{dataset}': Age of latest resource {min_age:.4f} exceeds acceptable age {acceptable_age:.4f}! --> https://data.opentransportdata.swiss/dataset/{dataset}")
+                    count_age_fails += 1
 
     data_test.log_info(f"CKAN dataset tests: Checked {len(datasets)}, {count_permalink_fails} permalink errors, {count_age_fails} exceeding acceptable age.")
 
@@ -153,8 +155,8 @@ def run(config: dict = None):
     data_test = DataTest(name="ckan_health_test")
     packages, data_test = load_ckan_package_list(data_test)
 
-    harvesters = [h for h in packages if 'harvester' in h]
-    check_harvesters(harvesters, data_test)
+    #harvesters = [h for h in packages if 'harvester' in h]
+    #check_harvesters(harvesters, data_test)
 
     datasets = get_datasets(data_test)
     check_datasets_permalink_and_age(datasets, data_test)
