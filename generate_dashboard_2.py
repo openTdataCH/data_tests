@@ -30,7 +30,7 @@ def get_status(obj):
     return 'ok'
 
 def get_worst_status(status_list):
-    hierarchy = {'red': 3, 'orange': 2, 'yellow': 1, 'green': 0}
+    hierarchy = {'exception': 3, 'failure': 2, 'warning': 1, 'ok': 0}
     return max(status_list, key=lambda s: hierarchy.get(s, 0)) if status_list else 'white'
 
 def generate_dashboard():
