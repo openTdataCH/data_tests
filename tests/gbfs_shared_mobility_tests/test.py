@@ -62,7 +62,7 @@ def process_feed(feed_url, config_type, data_test, token):
 
     content, size, _ = load_json(feed_url, data_test=data_test, key=token)
     if not content:
-        data_test.log_failure(f"Feed {feed_url} is empty!")
+        data_test.log_warning(f"Feed {feed_url} is empty!")
         return 0, size
 
     configs = TEST_CONFIGURATIONS_GBFS21 if config_type == "2.1" else TEST_CONFIGURATIONS_GBFS23

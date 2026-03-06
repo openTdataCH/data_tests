@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css">
+    <title>Test Dashboard {{ test_name }} at {{ timestamp }}</title>
+</head>
+<body>
+<div class="details">
+<div class="header">
+    <h3 class="test-name">{{ test_name }}</h3>
+    <span class="status-badge status-{{ status }}">{{ status }}</span>
+</div>
+
+<div class="timestamp">
+    <strong>Timestamp: </strong> {{ timestamp }}
+</div>
+
+<h4>Log Details:</h4>
+    {% for run in runs %}
+    <div class="run-entry">
+        <div>
+            <p class="timestamp" style="margin: 0;">Run at {{ run.time }}
+                <span class="status-badge status-{{ run.status }}">{{ run.status }}</span>
+            </p>
+        </div>
+        <pre class="content-box">{{ run.content }}</pre>
+    </div>
+    {% endfor %}
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const boxes = document.querySelectorAll('.content-box');
+
+        boxes.forEach(box => {
+            let text = box.innerHTML;
+            text = text.replace(/<br>/g, '<br>            ');
+
+            const exceptionTerms = ['EXCEPTION', 'ERROR'];
+            const failureTerms = ['FAILURE', 'FAILED'];
+
+            exceptionTerms.forEach(term => {
+                const regex = new RegExp(`(${term})`, 'g');
+                text = text.replace(regex, '<span class="hl-exception">$1</span>');
+            });
+
+            failureTerms.forEach(term => {
+                const regex = new RegExp(`(${term})`, 'g');
+                text = text.replace(regex, '<span class="hl-failure">$1</span>');
+            });
+
+            box.innerHTML = text;
+        });
+    });
+</script>
+</body>
+</html>

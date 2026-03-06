@@ -1,111 +1,156 @@
 """Given a folder TEST_REPORTS_FOLDER containing several files of type JSONL, each with JSON-Line objects,
 provide a Python script which generates an HTML report page with a table as follows: For each file,
 produce a row; cover the last DAY_RANGE calendar days in columns of the table; for each day, provide 24 hour subcolumns.
-For each JSON object in the file, get the reference timestamp (ISO 8601 formatted) from the the value at the key "logs".
+For each JSON object in the file, get the reference timestamp (ISO 8601 formatted) from the value at the key "logs".
 or each hour check if there is one or more objects;
 if so, check if object(s) have a "n_exceptions" key with value > 0, then provide a red symbol;
 else if object(s) have a "n_failures" key with value > 0, then provide an orange symbol;
 else if object(s) have a "n_warnings" key with value > 0, then provide a yellow symbol;
 else provide a green symbol
 
-Without using pandas, please.
-
-2025-12-27 -- GPT-4o mini -->
 """
-
 
 import os
 import json
 from datetime import datetime, timedelta
+from jinja2 import Environment, FileSystemLoader
 from configuration import CONFIG
 
 DAY_RANGE = 3
+HTML_OUT_DIR = CONFIG['folders']['html']
 
-# Set up date range for the last DAY_RANGE days
-today = datetime.now()
-date_range = [today - timedelta(days=i) for i in range(DAY_RANGE)]
+env = Environment(loader=FileSystemLoader('templates'))
+main_template = env.get_template('dashboard_template.html')
+detail_template = env.get_template('detail_template.html')
 
-# Initialize a list to hold data for the report
-report_data = []
+def get_status(obj):
+    if obj.get('n_exceptions', 0) > 0: return 'exception'
+    if obj.get('n_failures', 0) > 0: return 'failure'
+    if obj.get('n_warnings', 0) > 0: return 'warning'
+    return 'ok'
 
-# Define symbols for each status type
-def get_status_symbol(n_exceptions, n_failures, n_warnings):
-    if n_exceptions > 0:
-        return '⚫️'  # Red for exceptions
-    elif n_failures > 0:
-        return '🔴'  # Orange for failures
-    elif n_warnings > 0:
-        return '🟡'  # Yellow for warnings
-    else:
-        return '🟢'  # Green for success
+def get_worst_status(status_list):
+    hierarchy = {'exception': 3, 'failure': 2, 'warning': 1, 'ok': 0}
+    return max(status_list, key=lambda s: hierarchy.get(s, 0)) if status_list else 'white'
 
-# Process each JSONL file
-for filename in os.listdir(CONFIG['folders']['test_reports']):
-    if filename.endswith('.jsonl'):
+def generate_dashboard():
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    date_range = [today - timedelta(days=i) for i in range(DAY_RANGE)]
+
+    raw_grouped = {}
+    if not os.path.exists(HTML_OUT_DIR):
+        os.makedirs(HTML_OUT_DIR)
+
+    for filename in os.listdir(CONFIG['folders']['test_reports']):
+        if not filename.endswith('.jsonl'):
+            continue
+
+        test_id = filename.replace('.jsonl', '')
+
+        # create category if test contains variants to create an accordion
+        delimiter = "tests"
+        if delimiter in test_id.lower():
+            parts = test_id.lower().split(delimiter)
+            category = parts[0].strip("_")
+            start_index = test_id.lower().find(delimiter) + len(delimiter)
+            display_name = test_id[start_index:].strip("_")
+            if not display_name:
+                display_name = category
+        else:
+            category = "GENERAL"
+            display_name = test_id.strip("_")
+
         file_path = os.path.join(CONFIG['folders']['test_reports'], filename)
-        # Initialize a dictionary to hold hour-wise data for this file
-        file_data = {date.strftime('%Y-%m-%d'): {hour: "" for hour in range(24)} for date in date_range}
 
-        # Read the JSONL file
-        with open(file_path, 'r') as f:
+        file_stats = {d.strftime('%Y-%m-%d'): {h: [] for h in range(24)} for d in date_range}
+
+        with open(file_path, 'r', encoding='utf-8') as f:
             for line in f:
-                json_object = json.loads(line)
-                log_time = json_object.get('logs')[0:19]
+                try:
+                    obj = json.loads(line)
+                    log_time_str = obj.get('logs', '')[:19]
+                    if not log_time_str: continue
 
-                if log_time:
-                    log_datetime = datetime.fromisoformat(log_time)
-                    date_key = log_datetime.strftime('%Y-%m-%d')
-                    hour_key = log_datetime.hour
+                    dt = datetime.fromisoformat(log_time_str)
+                    d_key = dt.strftime('%Y-%m-%d')
+                    h_key = dt.hour
 
-                    # Initialize counts for status
-                    n_exceptions = json_object.get('n_exceptions', 0)
-                    n_failures = json_object.get('n_failures', 0)
-                    n_warnings = json_object.get('n_warnings', 0)
+                    if d_key in file_stats:
+                        file_stats[d_key][h_key].append({
+                            'time': dt.strftime('%H:%M:%S'),
+                            'status': get_status(obj),
+                            'content': json.dumps(obj, indent=4, sort_keys=True).replace('\\n', '<br>')
+                        })
+                except Exception:
+                    continue
 
-                    # Get status symbol
-                    status_symbol = get_status_symbol(n_exceptions, n_failures, n_warnings)
+        # Detail pages
+        test_final_stats = {}
+        for d_key, hours in file_stats.items():
+            test_final_stats[d_key] = {}
+            for h_key, runs in hours.items():
+                if runs:
+                    worst_status = get_worst_status([r['status'] for r in runs])
+                    detail_fn = f"details_{test_id}_{d_key}T{h_key:02}.html"
 
-                    # Update the status for the appropriate date and hour
-                    if file_data.get(date_key):
-                        file_data[date_key][hour_key] = status_symbol
+                    with open(os.path.join(HTML_OUT_DIR, detail_fn), 'w', encoding='utf-8') as df:
+                        df.write(detail_template.render(
+                            test_name=test_id,
+                            timestamp=f"{d_key} {h_key:02}:00 - {h_key:02}:59",
+                            runs=runs
+                        ))
+                    test_final_stats[d_key][h_key] = {
+                        'status': worst_status,
+                        'count': len(runs),
+                        'link': detail_fn
+                    }
+                else:
+                    test_final_stats[d_key][h_key] = None
 
-        # Add the file name and aggregated data to the list
-        report_data.append((filename, file_data))
+        if category not in raw_grouped:
+            raw_grouped[category] = []
 
-# Generate HTML report
-html_content = '<html><head><title>Report</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="styles.css"></head><body>'
-html_content += f'<h1>data_tests Dashboard</h1>'
-html_content += f"<p>Report for the last {DAY_RANGE} days, showing hours with all passed '🟢' tests, tests with warnings '🟡', failures '🔴' or errors/exceptions '⚫️'. </p>"
-html_content += '<table border="1"><tr><th>Test</th>'
+        raw_grouped[category].append({
+            'name': display_name,
+            'full_id': test_id,
+            'stats': test_final_stats
+        })
 
-# Create headers for both dates and hours
-for date in reversed(date_range):
-    html_content += f'<th colspan="24">{date.strftime("%Y-%m-%d")}</th>'
-html_content += '</tr><tr><th></th>'
+    # create final structure and collect categories
+    grouped_data_final = {}
 
-# Create hour columns
-for _ in range(DAY_RANGE):
-    for hour in range(24):
-        html_content += f'<th>{hour:02}</th>'
-html_content += '</tr>'
+    for category, tests in raw_grouped.items():
+        cat_summary_accumulator = {d.strftime('%Y-%m-%d'): {h: [] for h in range(24)} for d in date_range}
 
-# Fill table rows
-for file_name, file_data in report_data:
-    html_content += f'<tr><td><b>{file_name[:-6]}</b></td>'
+        for t in tests:
+            for d_key, hours in t['stats'].items():
+                for h_key, data in hours.items():
+                    if data:
+                        cat_summary_accumulator[d_key][h_key].append(data['status'])
 
-    # Fill hourly status for each day
-    for date in reversed(date_range):
-        date_key = date.strftime('%Y-%m-%d')
-        for hour in range(24):
-            html_content += f'<td>{file_data[date_key][hour]}</td>'
-    html_content += '</tr>'
+        category_summary = {}
+        for d_key, hours in cat_summary_accumulator.items():
+            category_summary[d_key] = {}
+            for h_key, statuses in hours.items():
+                if statuses:
+                    category_summary[d_key][h_key] = get_worst_status(statuses)
+                else:
+                    category_summary[d_key][h_key] = None
 
-html_content += '</table>'
-html_content += f'<p>Last updated: {datetime.now().isoformat()[:23]} - Github: <a href="https://github.com/openTdataCH/data_tests">github.com/openTdataCH/data_tests</a> - Home: <a href="https://opentransportdata.swiss">opentransportdata.swiss</a></p>'
-html_content += f'</body></html>'
+        grouped_data_final[category] = {
+            'tests': tests,
+            'summary': category_summary
+        }
 
-# Write to HTML file
-with open(f"{CONFIG['folders']['html']}/data_tests_dashboard.html", 'w', encoding="utf-8-sig") as report_file:
-    report_file.write(html_content)
+    output = main_template.render(
+        grouped_data=grouped_data_final,
+        date_range=date_range,
+        now=datetime.now().strftime('%d.%m.%Y %H:%M:%S')
+    )
 
-print("Report generated: data_tests_dashboard.html")
+    dashboard_path = os.path.join(HTML_OUT_DIR, 'data_tests_dashboard.html')
+    with open(dashboard_path, 'w', encoding='utf-8') as f:
+        f.write(output)
+
+if __name__ == "__main__":
+    generate_dashboard()
