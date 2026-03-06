@@ -27,7 +27,7 @@ def run() -> dict:
 
     data_test.log_info("passed all checks.")
 
-    return data_test.to_dict()
+    return data_test
 
 
 if __name__ == '__main__':

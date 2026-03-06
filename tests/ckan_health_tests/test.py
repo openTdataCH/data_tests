@@ -46,16 +46,23 @@ def check_harvesters(harvesters: list, data_test: DataTest):
     for harvester in [h for h in harvesters if h not in EXCLUDED_NON_DAILY_CRONS]:
         meta_data, size, data_test = load_ckan_package(harvester, data_test)
         # CKAN stores created date here as UTC but without TZ extension, add it:
-        last_job_age = age_in_days(meta_data["status"]["last_job"]["created"] + "+00:00")
-        last_job_status = meta_data["status"]["last_job"]["status"]
-        if last_job_age > 0.5 / 24.0 and last_job_status != "Finished":
-            data_test.log_failure(f"CKAN hanging harvester? '{harvester}' is running and older than 30 minutes!")
-            count_hanging += 1
-        frequency = meta_data.get("frequency")
-        notes_lc = str(meta_data.get("notes")).lower()
-        if last_job_age > 1.0 and frequency == "MANUAL" and "cron" in notes_lc:
-            data_test.log_failure(f"CKAN missed cron run? '{harvester}' age is {last_job_age:.4f} days!")
-            count_too_old += 1
+        if meta_data.get("status") and meta_data["status"].get("last_job"):
+            last_job = meta_data["status"]["last_job"]
+            last_job_age = age_in_days(last_job.get("created") + "+00:00")
+            last_job_status = last_job.get("status")
+            if last_job_age > 0.5 / 24.0 and last_job_status != "Finished":
+                data_test.log_failure(f"CKAN hanging harvester? '{harvester}' is running and older than 30 minutes!")
+                count_hanging += 1
+            gather_error_summary = last_job.get("gather_error_summary")
+            if gather_error_summary and len(gather_error_summary) > 0:
+                data_test.log_failure(f"CKAN harvester '{harvester}' last_job had an error: {str(gather_error_summary).replace('\n', '')}!")
+            frequency = meta_data.get("frequency")
+            notes_lc = str(meta_data.get("notes")).lower()
+            if last_job_age > 1.0 and frequency == "MANUAL" and "cron" in notes_lc:
+                data_test.log_failure(f"CKAN missed cron run? '{harvester}' age is {last_job_age:.4f} days!")
+                count_too_old += 1
+        else:
+            data_test.log_warning(f"No valid status/last_job for '{harvester}' found in metadata!")
     data_test.log_info(f"CKAN harvester tests: Checked {len(harvesters)}: {count_hanging} hanging, {count_too_old} older than a day.")
 
 
