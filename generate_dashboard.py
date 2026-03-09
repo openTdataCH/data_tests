@@ -33,6 +33,24 @@ def get_worst_status(status_list):
     hierarchy = {'exception': 3, 'failure': 2, 'warning': 1, 'ok': 0}
     return max(status_list, key=lambda s: hierarchy.get(s, 0)) if status_list else 'white'
 
+def prepare_log_content(content):
+    replacements = {
+        'EXCEPTION': '<span class="hl-exception">EXCEPTION</span>',
+        'ERROR': '<span class="hl-exception">ERROR</span>',
+        'FAILURE': '<span class="hl-failure">FAILURE</span>',
+        'FAILED': '<span class="hl-failure">FAILED</span>'
+    }
+    for term, replacement in replacements.items():
+        content = content.replace(term, replacement)
+
+    return content
+
+def get_stats_summary(obj):
+    exc = obj.get('n_exceptions', 0)
+    fail = obj.get('n_failures', 0)
+    warn = obj.get('n_warnings', 0)
+    return f"{exc} exceptions, {fail} failures, {warn} warnings."
+
 def generate_dashboard():
     today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     date_range = [today - timedelta(days=i) for i in range(DAY_RANGE)]
@@ -69,6 +87,7 @@ def generate_dashboard():
                 try:
                     obj = json.loads(line)
                     log_time_str = obj.get('logs', '')[:19]
+                    log_content = obj.get('logs')
                     if not log_time_str: continue
 
                     dt = datetime.fromisoformat(log_time_str)
@@ -79,13 +98,17 @@ def generate_dashboard():
                         file_stats[d_key][h_key].append({
                             'time': dt.strftime('%H:%M:%S'),
                             'status': get_status(obj),
-                            'content': json.dumps(obj, indent=4, sort_keys=True).replace('\\n', '<br>')
-                        })
+                            'stats_summary': get_stats_summary(obj),
+                            'content': prepare_log_content(log_content).replace('\\n', '<br>')})
                 except Exception:
                     continue
 
         # Detail pages
         test_final_stats = {}
+        test_subfolder = os.path.join(HTML_OUT_DIR, test_id)
+        if not os.path.exists(test_subfolder):
+            os.makedirs(test_subfolder)
+
         for d_key, hours in file_stats.items():
             test_final_stats[d_key] = {}
             for h_key, runs in hours.items():
@@ -93,7 +116,11 @@ def generate_dashboard():
                     worst_status = get_worst_status([r['status'] for r in runs])
                     detail_fn = f"details_{test_id}_{d_key}T{h_key:02}.html"
 
-                    with open(os.path.join(HTML_OUT_DIR, detail_fn), 'w', encoding='utf-8') as df:
+                    full_detail_path = os.path.join(test_subfolder, detail_fn)
+
+                    relative_link = f"{test_id}/{detail_fn}"
+
+                    with open(full_detail_path, 'w', encoding='utf-8') as df:
                         df.write(detail_template.render(
                             test_name=test_id,
                             timestamp=f"{d_key} {h_key:02}:00 - {h_key:02}:59",
@@ -102,7 +129,7 @@ def generate_dashboard():
                     test_final_stats[d_key][h_key] = {
                         'status': worst_status,
                         'count': len(runs),
-                        'link': detail_fn
+                        'link': relative_link
                     }
                 else:
                     test_final_stats[d_key][h_key] = None
