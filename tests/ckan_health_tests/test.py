@@ -55,7 +55,8 @@ def check_harvesters(harvesters: list, data_test: DataTest):
                 count_hanging += 1
             gather_error_summary = last_job.get("gather_error_summary")
             if gather_error_summary and len(gather_error_summary) > 0:
-                data_test.log_failure(f"CKAN harvester '{harvester}' last_job had an error: {str(gather_error_summary).replace('\n', '')}!")
+                data_test.log_failure(f"CKAN harvester " + str(harvester) + " last_job had an error: " + str(gather_error_summary) + " !")
+                #data_test.log_failure(f"CKAN harvester '{harvester}' last_job had an error: {str(gather_error_summary).replace('\n', '')}!")
             frequency = meta_data.get("frequency")
             notes_lc = str(meta_data.get("notes")).lower()
             if last_job_age > 1.0 and frequency == "MANUAL" and "cron" in notes_lc:
