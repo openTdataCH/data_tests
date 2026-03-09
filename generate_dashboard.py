@@ -42,7 +42,7 @@ def prepare_log_content(content):
         'WARNING': '<span class="hl-warning">WARNING</span>',
     }
 
-    words = content.split(' ')
+    words = content.split()
     new_words = []
 
     for word in words:
