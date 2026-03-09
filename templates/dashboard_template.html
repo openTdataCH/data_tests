@@ -26,7 +26,7 @@
 
 
 <h1>data_test: Dashboard</h1>
-<p>This Dashboard provides a real-time overview of the operating status and data status of different data sets.</p>
+<p>This dashboard provides a real-time overview of the operating status and data status of different data sets.</p>
 
 <div class="legend-container">
     <div class="legend-item">
@@ -71,7 +71,7 @@
         {% if tests|length > 1 %}
         {% set cat_id = category|replace(" ", "-")|lower %}
         <tr class="category-row" onclick="toggleCategory('{{ cat_id }}', this)">
-            <td class="file-name" style="background: #e9ecef;">
+            <td class="file-name">
                 {{ category }} ({{ tests|length }})
             </td>
             {% for date in date_range|reverse %}
@@ -186,32 +186,32 @@
 <footer class="custom-footer-container">
     <div class="footer-columns">
         <div class="footer-column">
-            <h3>Spielregeln</h3>
+            <h3>Rules</h3>
             <ul>
-                <li><a href="https://opentransportdata.swiss/de/terms-of-use/">General Terms and Conditions of Use</a></li>
-                <li><a href="https://opentransportdata.swiss/de/tac-fedro/">Terms and Conditions of Use FEDRO</a></li>
-                <li><a href="https://opentransportdata.swiss/de/limits-and-costs/">Limits and costs</a></li>
-                <li><a href="https://opentransportdata.swiss/de/authorised-databases/">Authorised databases</a></li>
-                <li><a href="https://opentransportdata.swiss/de/privacy-notice/">Data Privacy Statement</a></li>
+                <li><a href="https://opentransportdata.swiss/en/terms-of-use/">General Terms and Conditions of Use</a></li>
+                <li><a href="https://opentransportdata.swiss/en/tac-fedro/">Terms and Conditions of Use FEDRO</a></li>
+                <li><a href="https://opentransportdata.swiss/en/limits-and-costs/">Limits and costs</a></li>
+                <li><a href="https://opentransportdata.swiss/en/authorised-databases/">Authorised databases</a></li>
+                <li><a href="https://opentransportdata.swiss/en/privacy-notice/">Data Privacy Statement</a></li>
             </ul>
         </div>
         <div class="footer-column">
-            <h3>Über</h3>
+            <h3>About</h3>
             <ul>
-                <li><a href="https://opentransportdata.swiss/de/imprint/">Imprint</a></li>
-                <li><a href="https://opentransportdata.swiss/de/contact/">Contact</a></li>
-                <li><a href="https://opentransportdata.swiss/de/newsletter/">Newsletter registration</a></li>
+                <li><a href="https://opentransportdata.swiss/en/imprint/">Imprint</a></li>
+                <li><a href="https://opentransportdata.swiss/en/contact/">Contact</a></li>
+                <li><a href="https://opentransportdata.swiss/en/newsletter/">Newsletter registration</a></li>
                 <li><a href="https://www.oev-info.ch/de" target="_blank">oev-info.ch ↗</a></li>
             </ul>
         </div>
         <div class="footer-column">
-            <h3>Weiteres</h3>
+            <h3>More</h3>
             <ul>
-                <li><a href="https://opentransportdata.swiss/de/cookbook/tools-and-more/">Tools & More</a></li>
-                <li><a href="https://opentransportdata.swiss/de/media/">Media</a></li>
+                <li><a href="https://opentransportdata.swiss/en/cookbook/tools-and-more/">Tools & More</a></li>
+                <li><a href="https://opentransportdata.swiss/en/media/">Media</a></li>
                 <li><a href="https://status.opentransportdata.swiss/" target="_blank">Operational status ↗</a></li>
                 <li><a href="https://archive.opentransportdata.swiss/" target="_blank">Data archive ↗</a></li>
-                <li><a href="https://opentransportdata.swiss/de/">Cookie settings</a></li>
+                <li><a href="https://opentransportdata.swiss/en/">Cookie settings</a></li>
             </ul>
         </div>
         <div class="footer-column">

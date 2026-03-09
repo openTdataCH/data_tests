@@ -38,8 +38,21 @@ def prepare_log_content(content):
         'EXCEPTION': '<span class="hl-exception">EXCEPTION</span>',
         'ERROR': '<span class="hl-exception">ERROR</span>',
         'FAILURE': '<span class="hl-failure">FAILURE</span>',
-        'FAILED': '<span class="hl-failure">FAILED</span>'
+        'FAILED': '<span class="hl-failure">FAILED</span>',
+        'WARNING': '<span class="hl-warning">WARNING</span>',
     }
+
+    words = content.split(' ')
+    new_words = []
+
+    for word in words:
+        if word.startswith('http://') or word.startswith('https://'):
+            clean_url = word.rstrip('.,!?;')
+            new_words.append(f'<a href="{clean_url}" target="_blank">{clean_url}</a>')
+        else:
+            new_words.append(word)
+
+    content = ' '.join(new_words)
     for term, replacement in replacements.items():
         content = content.replace(term, replacement)
 
