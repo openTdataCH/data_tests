@@ -33,7 +33,18 @@ def get_worst_status(status_list):
     hierarchy = {'exception': 3, 'failure': 2, 'warning': 1, 'ok': 0}
     return max(status_list, key=lambda s: hierarchy.get(s, 0)) if status_list else 'white'
 
+def escape_html(text):
+    """Ersetzt HTML-Sonderzeichen manuell."""
+    return text.replace('&', '&amp;') \
+        .replace('<', '&lt;') \
+        .replace('>', '&gt;') \
+        .replace('"', '&quot;') \
+        .replace("'", '&#39;')
+
 def prepare_log_content(content):
+    lines = content.split('\n')
+    processed_lines = []
+
     replacements = {
         'EXCEPTION': '<span class="hl-exception">EXCEPTION</span>',
         'ERROR': '<span class="hl-exception">ERROR</span>',
@@ -42,21 +53,21 @@ def prepare_log_content(content):
         'WARNING': '<span class="hl-warning">WARNING</span>',
     }
 
-    words = content.split()
-    new_words = []
+    for line in lines:
+        safe_line = escape_html(line)
+        words = safe_line.split()
+        new_words = []
+        for word in words:
+            if word.startswith('http://') or word.startswith('https://'):
+                new_words.append(f'<a href="{word}" target="_blank">{word}</a>')
+            else:
+                new_words.append(word)
+        line_content = ' '.join(new_words)
+        for term,replacement in replacements.items():
+            line_content = line_content.replace(term, replacement)
+        processed_lines.append(line_content)
 
-    for word in words:
-        if word.startswith('http://') or word.startswith('https://'):
-            clean_url = word.rstrip('.,!?;')
-            new_words.append(f'<a href="{clean_url}" target="_blank">{clean_url}</a>')
-        else:
-            new_words.append(word)
-
-    content = ' '.join(new_words)
-    for term, replacement in replacements.items():
-        content = content.replace(term, replacement)
-
-    return content
+    return '<br>'.join(processed_lines)
 
 def get_stats_summary(obj):
     exc = obj.get('n_exceptions', 0)
@@ -112,7 +123,7 @@ def generate_dashboard():
                             'time': dt.strftime('%H:%M:%S'),
                             'status': get_status(obj),
                             'stats_summary': get_stats_summary(obj),
-                            'content': prepare_log_content(log_content).replace('\\n', '<br>')})
+                            'content': prepare_log_content(log_content)})
                 except Exception:
                     continue
 
