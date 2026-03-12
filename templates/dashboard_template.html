@@ -79,7 +79,11 @@
             {% for h in range(24) %}
             {% set g_status = data.summary[d_str][h] %}
             <td class="status-cell category-summary-cell">
-                {% if g_status %}<span class="status-dot {{ g_status }}"></span>{% endif %}
+                {% set cell = data.summary[d_str][h] %}
+                {% if cell %}
+                <a href="{{ cell.link }}" data-detail="{{ cell.link }}"
+                   class="status-dot {{ cell.status }}"></a>
+                {% endif %}
             </td>
             {% endfor %}
             {% endfor %}

@@ -184,7 +184,16 @@ def generate_dashboard():
             category_summary[d_key] = {}
             for h_key, statuses in hours.items():
                 if statuses:
-                    category_summary[d_key][h_key] = get_worst_status(statuses)
+                    worst_status = get_worst_status(statuses)
+                    target_link = None
+                    for test in tests:
+                        if test['stats'][d_key][h_key] and test['stats'][d_key][h_key]['status'] == worst_status:
+                            target_link = test['stats'][d_key][h_key]['link']
+                            break
+                    category_summary[d_key][h_key] = {
+                        'status': worst_status,
+                        'link': target_link
+                    }
                 else:
                     category_summary[d_key][h_key] = None
 
