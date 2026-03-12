@@ -6,8 +6,10 @@ the value of which contains a timestamp like 2025-12-26T14:27:08.759812+01:00 at
 
 import os
 import json
+import re
 from datetime import datetime, timedelta
 from configuration import CONFIG
+from utilities.file_and_path_utilities import get_path
 
 def prune_old_logs(folder_path, days):
     # Calculate the threshold date
@@ -41,7 +43,34 @@ def prune_old_logs(folder_path, days):
                     newline = '\n'
 
 
+def cleanup_by_filename(relative_folder_path, days):
+    """ Recursively deletes files in a given path if their filename contains
+    a date older than the number of days."""
+    root_path = get_path(relative_folder_path)
+
+    if not os.path.exists(root_path):
+        print(f"Path not found: {root_path}")
+        return
+    # Matches dates to date in filename.
+    date_pattern = re.compile(r"(\d{4}-\d{2}-\d{2})")
+    threshold_date = datetime.now() - timedelta(days=days)
+
+    # Iterate through all mentionned folders recursively and delete files older than threshold
+    for current_root, _, files in os.walk(root_path):
+        for file_name in files:
+            match = date_pattern.search(file_name)
+            if not match:
+                continue
+            try:
+                file_date = datetime.strptime(match.group(1), '%Y-%m-%d')
+            except ValueError:
+                continue
+            if file_date < threshold_date:
+                full_path = os.path.join(current_root, file_name)
+                print(f"Remove old test report: {file_name}")
+                os.remove(full_path)
 
 if __name__ == '__main__':
     days = 7  # Replace with the desired number of days
     prune_old_logs(CONFIG['folders']['test_reports'], days)
+    cleanup_by_filename(CONFIG['folders']['html'], days)
