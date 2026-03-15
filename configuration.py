@@ -22,6 +22,13 @@ CONFIG = {
         "logs": "data/logs",
         "templates": "templates",
         "tests": "tests"
+    },
+    "test_runner_alerts_allowed_times": {
+        "Monday": ["07:00", "18:00"],
+        "Tuesday": ["07:00", "18:00"],
+        "Wednesday": ["07:00", "18:00"],
+        "Thursday": ["07:00", "18:00"],
+        "Friday": ["07:00", "18:00"]
     }
 }
 
