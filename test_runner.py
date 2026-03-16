@@ -21,7 +21,7 @@ import json
 import logging
 
 from configuration import get_prop, CONFIG
-from utilities.mail_utilities import send_mail
+from utilities.mail_utilities import send_mail, recipients_that_are_now_is_in_allowed_time_window
 from utilities.template_utilities import Template
 from utilities.test_utilities import DataTest, html_report_from_json
 from datetime import datetime as dt
@@ -89,27 +89,17 @@ def has_exceptions_or_failures(test_report: dict) -> bool:
     return False
 
 
-def now_is_in_allowed_time_window():
-    now = dt.now()
-    weekday = now.strftime("%A")
-    current_time = now.strftime("%H:%M:%S")
-    allowed_times = get_prop("test_runner_alerts_allowed_times")
-    if allowed_times and allowed_times.get(weekday):
-        time_of_day_range = allowed_times[weekday]
-        if time_of_day_range[0] <= current_time < time_of_day_range[1]:
-            return True
-    return False
-
 
 def if_errors_send_alert_mail(name_and_variant: str, alert_group: str, test_report: dict):
     if has_exceptions_or_failures(test_report):
-        if now_is_in_allowed_time_window():
+        recipients = get_prop("skiplus_support")
+        allowed_recipients = recipients_that_are_now_is_in_allowed_time_window(get_prop("test_runner_alerts_allowed_times"), recipients)
+        if allowed_recipients:
             subject = f"data_tests: test '{name_and_variant}' has errors or failures"
-            recipients = get_prop("skiplus_support")
             body = Template("daily_report_mail_body.html")
             body.replace("subject", subject).replace("name", name_and_variant)
             body.append("payload", html_report_from_json(test_report))
-            return_code, message = send_mail(subject, recipients, body)
+            return_code, message = send_mail(subject, allowed_recipients, body)
             if return_code != 0:
                 raise ConnectionError(f"send_mail() has an error: return_code={return_code}, message={message}!")
 
