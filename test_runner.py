@@ -92,7 +92,7 @@ def has_exceptions_or_failures(test_report: dict) -> bool:
 
 def if_errors_send_alert_mail(name_and_variant: str, alert_group: str, test_report: dict):
     if has_exceptions_or_failures(test_report):
-        recipients = get_prop("skiplus_support")
+        recipients = get_prop(alert_group)
         allowed_recipients = recipients_that_are_now_is_in_allowed_time_window(get_prop("test_runner_alerts_allowed_times"), recipients)
         if allowed_recipients:
             subject = f"data_tests: test '{name_and_variant}' has errors or failures"
@@ -106,11 +106,12 @@ def if_errors_send_alert_mail(name_and_variant: str, alert_group: str, test_repo
 
 if __name__ == "__main__":
     name_and_variant, alert_group = get_commandline_arguments()
-    logging.info(f"test_runner.py {name_and_variant} {alert_group} - started.")
+    message_start = f"test_runner.py for test '{name_and_variant}' with alert group '{alert_group}':"
+    logging.info(f"{message_start} started.")
     try:
         test_report = import_and_run_test(name_and_variant)
         store_test_report(name_and_variant, test_report)
         if_errors_send_alert_mail(name_and_variant, alert_group, test_report)
-        logging.info(f"test_runner.py {name_and_variant} {alert_group} - finished.")
+        logging.info(f"{message_start} finished.")
     except Exception as e:
-        logging.error(f"test_runner.py {name_and_variant} {alert_group} - failed with Exception: {str(e)}")
+        logging.error(f"{message_start} FAILED with Exception: {str(e)}")
