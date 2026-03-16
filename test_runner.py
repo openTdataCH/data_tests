@@ -95,8 +95,9 @@ def if_errors_send_alert_mail(name_and_variant: str, alert_group: str, test_repo
         recipients = get_prop(alert_group)
         allowed_recipients = recipients_that_are_now_is_in_allowed_time_window(get_prop("test_runner_alerts_allowed_times"), recipients)
         if allowed_recipients:
-            subject = f"data_tests: test '{name_and_variant}' has errors or failures"
-            body = Template("daily_report_mail_body.html")
+            subject = f"""data_tests: Test '{name_and_variant}' has Exceptions or Failures"""
+            body = Template("test_runner_mail_body.html")
+            body.replace("alert_group", alert_group)
             body.replace("subject", subject).replace("name", name_and_variant)
             body.append("payload", html_report_from_json(test_report))
             return_code, message = send_mail(subject, allowed_recipients, body)
