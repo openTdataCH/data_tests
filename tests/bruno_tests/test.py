@@ -15,9 +15,10 @@ import os
 from utilities.file_and_path_utilities import get_path
 
 RESOURCES = {
-    "OJP2.0": get_path("tests/bruno_tests/collection/OJP_2.0_2026_01"),
-    "OJP1.0": get_path("tests/bruno_tests/collection/OJP_1.0_2026_01"),
-    "OJP1.0_Sample": get_path("tests/bruno_tests/collection/sample_test")
+    "OJP2.0": get_path("tests/bruno_tests/data/collection/OJP_2.0_2026_01"),
+    "OJP1.0": get_path("tests/bruno_tests/data/collection/OJP_1.0_2026_01"),
+    "OJP1.0_Sample": get_path("tests/bruno_tests/data/collection/sample_test"),
+    "OJP2.0_Sample": get_path("tests/bruno_tests/data/collection/sample_test_20")
 }
 
 def load_bruno_env(file_path: str, env_name: str) -> dict:
@@ -72,7 +73,7 @@ def get_all_bru_files(directory: str) -> list:
 def run(variant: str = None) -> DataTest:
     data_test = DataTest(name=f"bruno_test_{variant}" if variant else "bruno_test_all")
 
-    env_file = get_path("tests/bruno_tests/variables/bruno-global-environments.json")
+    env_file = get_path("tests/bruno_tests/data/variables/bruno-global-environments.json")
 
     if variant:
         if variant in RESOURCES:
@@ -121,5 +122,5 @@ def run(variant: str = None) -> DataTest:
     return data_test
 
 if __name__ == '__main__':
-    tr = run(variant="OJP1.0_Sample")
+    tr = run(variant="OJP2.0_Sample")
     print(tr)
