@@ -2,7 +2,7 @@
 Tests mandatory fields and mandatory files in GTFS datasets.
 """
 
-import urllib.request
+import requests
 import zipfile
 import csv
 import io
@@ -58,30 +58,30 @@ GTFS_REQUIRED_FIELDS = {
 def check_gtfs(url: str, data_test=None):
     if data_test is None:
         data_test = DataTest(name="check_gtfs")
-    req = urllib.request.Request(
-        url,
-        headers={'User-Agent': 'Mozilla/5.0'}
-    )
+    headers = {'User-Agent': 'Mozilla/5.0'}
 
     try:
-        with urllib.request.urlopen(req) as response:
-            zip_content = response.read()
+        response = requests.get(url, headers=headers, timeout=30)
+        response.raise_for_status()
+        with zipfile.ZipFile(io.BytesIO(response.content)) as z:
+            files_in_zip = z.namelist()
 
-            with zipfile.ZipFile(io.BytesIO(zip_content)) as z:
-                files_in_zip = z.namelist()
+            for file in REQUIRED_GTFS_FILES:
+                if file not in files_in_zip:
+                    data_test.log_failure(f"Required file {file} missing!")
+                else:
+                    validate_fields(z, file, data_test)
 
-                for file in REQUIRED_GTFS_FILES:
-                    if file not in files_in_zip:
-                        data_test.log_failure(f"Required file {file} missing!")
-                    else:
-                        validate_fields(z, file, data_test)
+            for file in OPTIONAL_GTFS_FILES:
+                if file in files_in_zip:
+                    validate_fields(z, file, data_test)
 
-                for file in OPTIONAL_GTFS_FILES:
-                    if file in files_in_zip:
-                        validate_fields(z, file, data_test)
-
+    except requests.exceptions.RequestException as e:
+        data_test.log_failure(f"Request Error: {e}")
+    except zipfile.BadZipFile:
+        data_test.log_failure("Downloaded file is not a valid ZIP archive.")
     except Exception as e:
-        data_test.log_failure(f"Error: {e}")
+        data_test.log_failure(f"General Error: {e}")
 
 
 def validate_fields(zip_handle, filename, data_test):
