@@ -17,6 +17,7 @@ def run():
     gtfs_url = "https://data.opentransportdata.swiss/dataset/gtfsflex/permalink"
 
     check_gtfs(gtfs_url, data_test)
+    data_test.log_info("GTFS Flex Schema successfully checked")
 
     return data_test
 
