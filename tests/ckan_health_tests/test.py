@@ -129,6 +129,12 @@ def _acceptable_age_in_days(dataset):
     return DEFAULT_ACCEPTABLE_AGE
 
 
+def _canonized_permalink(permalink: str) -> str:
+    """Returns a canonical form of a permalink, removing language short-strings /de/, /fr/, /it/, /en/."""
+    return permalink.replace("/de/", "/").replace("/en/", "/").replace("/fr/", "/").replace("/it/", "/")
+
+
+
 def check_datasets_permalink_and_age(datasets: list, data_test: DataTest):
     count_permalink_fails, count_age_fails = 0, 0
     for dataset in datasets:
@@ -147,7 +153,7 @@ def check_datasets_permalink_and_age(datasets: list, data_test: DataTest):
                         min_age = age_of_resource
 
                 permalink = ds_metadata.get("permalink")
-                if permalink != latest_resource_permalink:
+                if _canonized_permalink(permalink) != _canonized_permalink(latest_resource_permalink):
                     data_test.log_failure(f"Dataset '{dataset}': Permalink not matching latest resource URL! --> https://data.opentransportdata.swiss/dataset/{dataset}")
                     count_permalink_fails += 1
 
