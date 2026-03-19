@@ -7,12 +7,18 @@
 </head>
 <body>
 <div class="details">
+    <a href="../data_tests_dashboard.html" class="back-link">← Return to Dashboard</a>
     <div class="header">
-        <h1 class="test-name">{{ test_name }}</h1>
+        <h1 class="test-name">{{ test_name }}: Details</h1>
     </div>
 
+    <p>
+        You are currently viewing the detailed test results and logs for {{ test_name }}. <br>
+        This page provides an in-depth look at the test runs, including their status, execution times, and detailed logs for each run.<br>
+    </p>
+
     <div class="timestamp">
-        <strong>Time window: </strong> {{ timestamp }}
+         <strong>time window:</strong> {{ timestamp }}
     </div>
 
     <h2>Log Details:</h2>
