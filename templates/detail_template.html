@@ -11,15 +11,13 @@
     <div class="header">
         <h1 class="test-name">{{ test_name }}: Details</h1>
     </div>
-
+    <div class="timestamp">
+        <strong>time window:</strong> {{ timestamp }}
+    </div>
     <p>
         You are currently viewing the detailed test results and logs for {{ test_name }}. <br>
         This page provides an in-depth look at the test runs, including their status, execution times, and detailed logs for each run.<br>
     </p>
-
-    <div class="timestamp">
-         <strong>time window:</strong> {{ timestamp }}
-    </div>
 
     <h2>Log Details:</h2>
     {% for run in runs %}
