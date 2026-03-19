@@ -16,35 +16,48 @@ from datetime import datetime as dt, timezone, timedelta
 
 
 NOW = dt.now(timezone.utc)
+
 DS_PATH = "tests/ckan_health_tests/data/datasets.json"
 
 
-def get_datasets(data_test: DataTest) -> list:
+def get_datasets(data_test: DataTest) -> dict:
+    """Gets a dict with dataset id (slug)/identifier as key/value pairs; if not in available at DS_PATH, load and save it.
+     The Identifiers are needed later on for the mapping to the harvester(s)."""
     ds = load_json_file(DS_PATH)
     if ds is not None:
         return ds
     else:
         try:
-            ds = []
+            ds = {}
             package_list, _ = load_ckan_package_list(data_test)
             for package in package_list:
                 package_metadata, _, _ = load_ckan_package(package, data_test)
                 if package_metadata.get('type') == "dataset":
-                    ds.append(package)
+                    ds[package] = package_metadata.get('identifier')
             save_json_file(DS_PATH, ds)
             data_test.log_info(f"Loaded datasets list with {len(ds)} datasets and saved to cache.")
             return ds
         except Exception as e:
-            data_test.log_exception(f"get_datasets failed witth {str(e)}", e)
-            return None
+            data_test.log_exception(f"get_datasets failed with {str(e)}", e)
+            return {}
 
 
 EXCLUDED_NON_DAILY_CRONS = ('gtfs2020-harvester', )
 
-def check_harvesters(harvesters: list, data_test: DataTest):
+def check_harvesters(harvesters: list, data_test: DataTest) -> dict:
+    harvester_to_datasets_mapping = {}
     count_hanging, count_too_old = 0, 0
     for harvester in [h for h in harvesters if h not in EXCLUDED_NON_DAILY_CRONS]:
         meta_data, size, data_test = load_ckan_package(harvester, data_test)
+
+        # The "dataset" attribute is needed for the link from dataset to harvester (needed later on).
+        # If it contains a {year} placeholder, replace this with possible years (NOW +/- 3 years)
+        dataset = meta_data.get('dataset')
+        if dataset:
+            values = [dataset.replace('{year}', str(y)) for y in range(NOW.year - 3, NOW.year + 4)] if "{year}" in dataset else [dataset]
+            for value in values:
+                harvester_to_datasets_mapping[value] = harvester
+
         # CKAN stores created date here as UTC but without TZ extension, add it:
         if meta_data.get("status") and meta_data["status"].get("last_job"):
             last_job = meta_data["status"]["last_job"]
@@ -65,6 +78,8 @@ def check_harvesters(harvesters: list, data_test: DataTest):
         else:
             data_test.log_warning(f"No valid status/last_job for '{harvester}' found in metadata!")
     data_test.log_info(f"CKAN harvester tests: Checked {len(harvesters)}: {count_hanging} hanging, {count_too_old} older than a day.")
+
+    return harvester_to_datasets_mapping
 
 
 EXCLUDED_DATASETS = ('business-organisations', 'formations', 'gtfsrt', 'gtfs-sa', 'halte', 'hrdf_test_207',
@@ -92,7 +107,6 @@ LESS_THAN_DAILY_UPDATES_UTC = {
 }
 MINIMUM_ACCEPTABLE_AGE = 0.25
 DEFAULT_ACCEPTABLE_AGE = 1.1
-
 
 def _get_past_instant(target_weekday_str, target_hour):
     WD = {"mon": 0, "tue": 1, "wed": 2, "thu": 3, "fri": 4, "sat": 5, "sun": 6}
@@ -135,9 +149,9 @@ def _canonized_permalink(permalink: str) -> str:
 
 
 
-def check_datasets_permalink_and_age(datasets: list, data_test: DataTest):
+def check_datasets_permalink_and_age(datasets: dict, harvester_to_datasets_mapping: dict, data_test: DataTest):
     count_permalink_fails, count_age_fails = 0, 0
-    for dataset in datasets:
+    for dataset in sorted(list(datasets.keys())):
         if dataset not in EXCLUDED_DATASETS:
             ds_metadata, _, _ = load_ckan_package(dataset, data_test)
             if not ds_metadata:
@@ -159,7 +173,10 @@ def check_datasets_permalink_and_age(datasets: list, data_test: DataTest):
 
                 acceptable_age = _acceptable_age_in_days(dataset)
                 if min_age > acceptable_age:
-                    data_test.log_failure(f"Dataset '{dataset}': Age of latest resource {min_age:.4f} exceeds acceptable age {acceptable_age:.4f}! --> https://data.opentransportdata.swiss/dataset/{dataset}")
+                    id = datasets.get(dataset)
+                    harvester_id = harvester_to_datasets_mapping.get(id)
+                    h_link = f"\n  --> harvester: https://data.opentransportdata.swiss/harvest/{harvester_id}" if harvester_id else ""
+                    data_test.log_failure(f"Dataset '{dataset}': Age of latest resource is {min_age:.3f} days, exceeds acceptable age of {acceptable_age:.3f} days!\n  --> dataset: https://data.opentransportdata.swiss/dataset/{dataset}{h_link}")
                     count_age_fails += 1
 
     data_test.log_info(f"CKAN dataset tests: Checked {len(datasets)}, {count_permalink_fails} permalink errors, {count_age_fails} exceeding acceptable age.")
@@ -170,10 +187,10 @@ def run(config: dict = None):
     packages, data_test = load_ckan_package_list(data_test)
 
     harvesters = [h for h in packages if 'harvester' in h]
-    check_harvesters(harvesters, data_test)
+    harvester_to_datasets_mapping = check_harvesters(harvesters, data_test)
 
     datasets = get_datasets(data_test)
-    check_datasets_permalink_and_age(datasets, data_test)
+    check_datasets_permalink_and_age(datasets, harvester_to_datasets_mapping, data_test)
 
     return data_test
 
