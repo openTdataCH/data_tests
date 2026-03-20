@@ -52,7 +52,7 @@ def run() -> dict:
                     metadata_resource = resource_by_identifier(meta_data, identifier)
                     age = age_in_days(metadata_resource.get("issued"))
                     if age >= AGE_IN_DAYS_THRESHOLD:
-                        data_test.log_failure(f"FAILED age check, age {age:.4f} is above threshold {AGE_IN_DAYS_THRESHOLD:.4f}.")
+                        data_test.log_failure(f"FAILED age check, age {age:.3f} days is above threshold {AGE_IN_DAYS_THRESHOLD:.3f} days.\n--> https://data.opentransportdata.swiss/dataset/{dataset}-v2 --> {flavour}")
                     else:
                         sucesses = sucesses + identifier + ', '
                 else:
