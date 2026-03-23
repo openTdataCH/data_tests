@@ -96,7 +96,7 @@
             {% for h in range(24) %}
             {% set cell = row.stats[d_str][h] %}
             <td class="status-cell">
-                {% if cell %}<a href="{{ cell.link }}" data-detail="{{ cell.link }}" class="status-dot {{ cell.status }}" target="_blank"></a>{% else %}<span class="empty"></span>{% endif %}
+                {% if cell %}<a href="{{ cell.link }}" data-detail="{{ cell.link }}" class="status-dot {{ cell.status }}"></a>{% else %}<span class="empty"></span>{% endif %}
             </td>
             {% endfor %}
             {% endfor %}
