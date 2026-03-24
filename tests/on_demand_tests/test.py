@@ -7,7 +7,8 @@ The test does these checks:
 
 The run method requires no config at all (hence, no 'config' parameter).
 """
-
+from tests.on_demand_tests.netex_utilities import check_netex
+from tests.on_demand_tests.hrdf_utilities import check_hrdf
 from utilities.test_utilities import DataTest
 from utilities.gtfs_utilities import check_gtfs
 
@@ -15,9 +16,15 @@ def run():
     data_test = DataTest(name="on_demand_test")
 
     gtfs_url = "https://data.opentransportdata.swiss/dataset/gtfsflex/permalink"
+    netex_url = "https://data.opentransportdata.swiss/dataset/netex_tt_odv/permalink"
+    hrdf_url = "https://data.opentransportdata.swiss/dataset/hrdf_odv/permalink"
 
     check_gtfs(gtfs_url, data_test)
-    data_test.log_info("GTFS Flex Schema successfully checked")
+    data_test.log_info("GTFS Flex Schema check completed.")
+    check_netex(netex_url, data_test)
+    data_test.log_info("NETEX Schema check completed.")
+    check_hrdf(hrdf_url, data_test)
+    data_test.log_info("HRDF Schema check completed.")
 
     return data_test
 
