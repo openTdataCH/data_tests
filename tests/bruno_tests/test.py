@@ -151,7 +151,7 @@ def run(variant: str = None) -> DataTest:
             data_test.log_failure(f"Test count low: {executed_tests} (Expected min: {expected_amount})")
 
     data_test.log_info(f"Finished execution. Calls: {total_requests} | Failures: {total_failures}. | "
-                       f"Total conditions: {total_conditions} | Failed conditions: {total_failures}.")
+                       f"Total conditions: {total_conditions} | Failed conditions: {total_conditions_failed}.")
     return data_test
 
 if __name__ == '__main__':
