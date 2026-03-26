@@ -5,7 +5,6 @@ Tests mandatory fields and mandatory files in HRDF datasets.
 import io
 import os
 import re
-import json
 import zipfile
 import tempfile
 from utilities.test_utilities import DataTest
@@ -190,7 +189,6 @@ def check_fplan(path: str, data_test: DataTest):
     has_trip = any(ln.strip().startswith("*T ") for ln in payload)
     has_g_tel = any(ln.strip().startswith("*G TEL") for ln in payload)
     has_a_ve = any(ln.strip().startswith("*A VE") for ln in payload)
-    # Mindestens eine Zeile mit einem Pseudo-Haltestellentyp
     stop_line_re = re.compile(r'^\d+\s+(?:' + "|".join(HRDF_STOP_TYPES) + r')\b')
     has_stop_line = any(stop_line_re.match(ln.strip()) for ln in payload)
     data_test.test(
@@ -317,7 +315,7 @@ def check_hrdf(url, data_test = None) -> DataTest:
             data_test.log_failure("Didn't find a ZIP file. Aborting.")
             return data_test
 
-        tmp_dir = unzip_bytes_to_temp(raw, data_test)
+        tmp_dir = unzip_bytes_to_temp(raw)
 
         file_map: Dict[str, str] = {}
         for name in EXPECTED_FILES:
