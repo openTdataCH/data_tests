@@ -194,7 +194,7 @@ class BrunoRunner:
         – strict=True: Return None if returncode != 0 or assertions failed.
         """
         if not self._bru:
-            msg = "bru CLI nicht gefunden. Bitte Bruno CLI installieren und in PATH verfügbar machen."
+            msg = "bru CLI not found. Please install Bruno CLI and add it in PATH."
             self.data_test.log_failure(msg)
             raise FileNotFoundError(msg)
 
