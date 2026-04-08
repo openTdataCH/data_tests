@@ -16,7 +16,16 @@ RESOURCES = {
 }
 
 EXCLUDED_URLS = {
-    "https://sharedmobility.ch/v2/gbfs/donkey_le_locle/system_pricing_plans"
+    "https://sharedmobility.ch/v2/gbfs/donkey_le_locle/system_pricing_plans",
+    "https://sharedmobility.ch/v2/gbfs/bird-platform-partner-jmfleetswl-biel/system_pricing_plans",
+    "https://sharedmobility.ch/v2/gbfs/bird-grenchen/system_pricing_plans",
+    "https://sharedmobility.ch/v2/gbfs/bird-biel/system_pricing_plans",
+    "https://sharedmobility.ch/v2/gbfs/bird-kloten/system_pricing_plans",
+    "https://sharedmobility.ch/v2/gbfs/bird-platform-partner-jmfleets-bulle/system_pricing_plans",
+    "https://sharedmobility.ch/v2/gbfs/bird-zurich/system_pricing_plans",
+    "https://sharedmobility.ch/v2/gbfs/bird-basel/system_pricing_plans",
+    "https://sharedmobility.ch/v2/gbfs/bird-schaffhausen/system_pricing_plans",
+    "https://sharedmobility.ch/v2/gbfs/bird-winterthur/system_pricing_plans"
 }
 
 TEST_CONFIGURATIONS_GBFS21 = [
