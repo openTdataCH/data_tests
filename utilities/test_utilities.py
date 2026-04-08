@@ -66,9 +66,10 @@ class DataTest():
             self.n_warnings += 1
         if level == "FAILURE":
             self.n_failures += 1
+        if level == "EXCEPTION":
+            self.n_exceptions += 1
         if exception:
             self.exceptions.append(exception)
-            self.n_exceptions += 1
 
     def log_info(self, text: str, summary = None):
         self._log(text, level='info')
