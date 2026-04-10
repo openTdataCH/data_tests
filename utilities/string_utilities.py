@@ -2,15 +2,10 @@
 
 """
 
-
-
-import re
-
 def strip_html_tags(text):
     # escape html special characters:
     text = text.replace(r'<', '&lt;').replace(r'>', '&gt;').replace(r'&', '&amp;').replace(r'"', '&quot;').replace("'", "&apos;")
     return text
-
 
 
 if __name__ == '__main__':
