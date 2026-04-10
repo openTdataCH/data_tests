@@ -16,14 +16,15 @@ from utilities.file_and_path_utilities import get_path, file_age_in_days_if_exis
 
 
 SP_PERMALINK = "https://data.opentransportdata.swiss/dataset/service-point-v2/resource_permalink/actual-date-swiss-service-point.csv"
-SP_FILEPATH = "utilities/service_points_utilities/data/actual-date-swiss-service-point.csv"
+SP_DIR = "utilities/service_points_utilities/data"
+SP_FILEPATH = F"{SP_DIR}/actual-date-swiss-service-point.csv"
 SP_FILE_AGE_THRESHOLD = 1.0
 sps = None
 
 
 def _load_service_points():
-    if not os.path.exists('data'):
-        os.mkdir('data')
+    if not os.path.exists(get_path(SP_DIR)):
+        os.mkdir(get_path(SP_DIR))
     global sps
     age = file_age_in_days_if_exists(SP_FILEPATH)
     if age is None or age > SP_FILE_AGE_THRESHOLD:
@@ -31,7 +32,6 @@ def _load_service_points():
         response.raise_for_status()
         with open(get_path(SP_FILEPATH), "wb") as file:
             file.write(response.content)
-        print(f"reloaded file {SP_FILEPATH}")
 
     s = load_csv_from_file(SP_FILEPATH, encoding='utf-8-sig')
     sps =  [{s[0][i]: (r[i] if i < len(r) else None) for i in range(len(s[0]))} for r in s[1:]]
