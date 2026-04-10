@@ -1,0 +1,335 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "required": [
+        "OJP"
+    ],
+    "properties": {
+        "OJP": {
+            "type": "object",
+            "required": [
+                "@version",
+                "OJPResponse"
+            ],
+            "properties": {
+                "@version": {
+                    "type": "string"
+                },
+                "OJPResponse": {
+                    "type": "object",
+                    "required": [
+                        "siri:ServiceDelivery"
+                    ],
+                    "properties": {
+                        "siri:ServiceDelivery": {
+                            "type": "object",
+                            "required": [
+                                "OJPTripDelivery",
+                                "siri:ProducerRef",
+                                "siri:ResponseMessageIdentifier",
+                                "siri:ResponseTimestamp"
+                            ],
+                            "properties": {
+                                "siri:ResponseTimestamp": {
+                                    "type": "string"
+                                },
+                                "siri:ProducerRef": {
+                                    "type": "string"
+                                },
+                                "siri:ResponseMessageIdentifier": {
+                                    "type": "string"
+                                },
+                                "OJPTripDelivery": {
+                                    "type": "object",
+                                    "required": [
+                                        "CalcTime",
+                                        "siri:DefaultLanguage",
+                                        "siri:ResponseTimestamp",
+                                        "TripResponseContext",
+                                        "TripResult"
+                                    ],
+                                    "properties": {
+                                        "siri:ResponseTimestamp": {
+                                            "type": "string"
+                                        },
+                                        "siri:DefaultLanguage": {
+                                            "type": "string"
+                                        },
+                                        "CalcTime": {
+                                            "type": "string"
+                                        },
+                                        "TripResponseContext": {
+                                            "type": "object",
+                                            "required": [
+                                                "Places",
+                                                "Situations"
+                                            ],
+                                            "properties": {
+                                                "Places": {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "Place"
+                                                    ],
+                                                    "properties": {
+                                                        "Place": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "Name": {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "Text": {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "@xml:lang": {
+                                                                                        "type": "string"
+                                                                                    },
+                                                                                    "#text": {
+                                                                                        "type": "string"
+                                                                                    }
+                                                                                },
+                                                                                "required": [
+                                                                                    "#text",
+                                                                                    "@xml:lang"
+                                                                                ]
+                                                                            }
+                                                                        },
+                                                                        "required": [
+                                                                            "Text"
+                                                                        ]
+                                                                    },
+                                                                    "GeoPosition": {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "siri:Longitude": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "siri:Latitude": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": [
+                                                                            "siri:Latitude",
+                                                                            "siri:Longitude"
+                                                                        ]
+                                                                    },
+                                                                    "StopPoint": {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "siri:StopPointRef": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "StopPointName": {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "Text": {
+                                                                                        "type": "object",
+                                                                                        "properties": {
+                                                                                            "@xml:lang": {
+                                                                                                "type": "string"
+                                                                                            },
+                                                                                            "#text": {
+                                                                                                "type": "string"
+                                                                                            }
+                                                                                        },
+                                                                                        "required": [
+                                                                                            "#text",
+                                                                                            "@xml:lang"
+                                                                                        ]
+                                                                                    }
+                                                                                },
+                                                                                "required": [
+                                                                                    "Text"
+                                                                                ]
+                                                                            },
+                                                                            "PrivateCode": {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "System": {
+                                                                                        "type": "string"
+                                                                                    },
+                                                                                    "Value": {
+                                                                                        "type": "string"
+                                                                                    }
+                                                                                },
+                                                                                "required": [
+                                                                                    "System",
+                                                                                    "Value"
+                                                                                ]
+                                                                            },
+                                                                            "ParentRef": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "TopographicPlaceRef": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": [
+                                                                            "ParentRef",
+                                                                            "PrivateCode",
+                                                                            "siri:StopPointRef",
+                                                                            "StopPointName",
+                                                                            "TopographicPlaceRef"
+                                                                        ]
+                                                                    },
+                                                                    "TopographicPlace": {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "TopographicPlaceCode": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "TopographicPlaceName": {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "Text": {
+                                                                                        "type": "object",
+                                                                                        "properties": {
+                                                                                            "@xml:lang": {
+                                                                                                "type": "string"
+                                                                                            },
+                                                                                            "#text": {
+                                                                                                "type": "string"
+                                                                                            }
+                                                                                        },
+                                                                                        "required": [
+                                                                                            "#text",
+                                                                                            "@xml:lang"
+                                                                                        ]
+                                                                                    }
+                                                                                },
+                                                                                "required": [
+                                                                                    "Text"
+                                                                                ]
+                                                                            }
+                                                                        },
+                                                                        "required": [
+                                                                            "TopographicPlaceCode",
+                                                                            "TopographicPlaceName"
+                                                                        ]
+                                                                    },
+                                                                    "StopPlace": {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "StopPlaceRef": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "StopPlaceName": {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "Text": {
+                                                                                        "type": "object",
+                                                                                        "properties": {
+                                                                                            "@xml:lang": {
+                                                                                                "type": "string"
+                                                                                            },
+                                                                                            "#text": {
+                                                                                                "type": "string"
+                                                                                            }
+                                                                                        },
+                                                                                        "required": [
+                                                                                            "#text",
+                                                                                            "@xml:lang"
+                                                                                        ]
+                                                                                    }
+                                                                                },
+                                                                                "required": [
+                                                                                    "Text"
+                                                                                ]
+                                                                            },
+                                                                            "PrivateCode": {
+                                                                                "type": "object",
+                                                                                "properties": {
+                                                                                    "System": {
+                                                                                        "type": "string"
+                                                                                    },
+                                                                                    "Value": {
+                                                                                        "type": "string"
+                                                                                    }
+                                                                                },
+                                                                                "required": [
+                                                                                    "System",
+                                                                                    "Value"
+                                                                                ]
+                                                                            },
+                                                                            "TopographicPlaceRef": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": [
+                                                                            "PrivateCode",
+                                                                            "StopPlaceName",
+                                                                            "StopPlaceRef",
+                                                                            "TopographicPlaceRef"
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "GeoPosition",
+                                                                    "Name"
+                                                                ]
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "Situations": {
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "TripResult": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "Id": {
+                                                        "type": "string"
+                                                    },
+                                                    "Trip": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "Id": {
+                                                                "type": "string"
+                                                            },
+                                                            "Duration": {
+                                                                "type": "string"
+                                                            },
+                                                            "StartTime": {
+                                                                "type": "string"
+                                                            },
+                                                            "EndTime": {
+                                                                "type": "string"
+                                                            },
+                                                            "Transfers": {
+                                                                "type": "string"
+                                                            },
+                                                            "Distance": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "Duration",
+                                                            "EndTime",
+                                                            "Id",
+                                                            "Leg",
+                                                            "StartTime",
+                                                            "Transfers"
+                                                        ]
+                                                    }
+                                                },
+                                                "required": [
+                                                    "Id",
+                                                    "Trip"
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
