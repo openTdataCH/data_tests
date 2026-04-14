@@ -19,7 +19,6 @@ import time
 
 import json
 import random
-import requests
 from datetime import datetime as dt
 from jsonschema import validate, ValidationError, SchemaError
 
@@ -27,9 +26,7 @@ from utilities.file_and_path_utilities import get_path
 from utilities.json_utilities import load_json_file
 from utilities.ojp_utilities.easy_ojp20 import ojp20_triprequest
 from utilities.test_utilities import DataTest
-from utilities.xml_utilities import easy_xml
 
-session = requests.session()
 NOW = dt.now().isoformat()
 TEST_NAME = "ojp20_tr_random_validated_tests"
 CONN_LOG_FILE = f"tests/{TEST_NAME}/data/{TEST_NAME}_log.txt"

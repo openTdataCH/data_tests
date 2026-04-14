@@ -29,14 +29,19 @@ headers = {"Authorization": f"Bearer {get_prop('key_ojp20')}", "Content-Type": "
 def _now_iso8601():
     return dt.now(tz=ZoneInfo("Europe/Berlin")).isoformat()
 
+def _sp_name_for_bpuic(bpuic: str):
+    sp = get_service_point('number', bpuic)
+    if sp is None:
+        raise ValueError(f"No service point known for BPUIC {bpuic}.")
+    return sp.get('designationOfficial')
+
 
 def ojp20_triprequest(a_bpuic: str, b_bpuic: str, departure_time_iso8601 = _now_iso8601(), return_as = "str", data_test: DataTest = None) -> tuple:
     """A simple access to the OJP 2.0 TripRquest, with A and B (bpuic), optional departure time.
     Depending on "return_as", returns a bytes response ("bytes"), a XML str ("str", default), or a lxml _Element object ("xml", "lxml") or dict ("dict").
     Returns the HTTPS status code, the size in bytes,  and the desired object/format."""
     now_iso8601 = _now_iso8601()
-    a_name = get_service_point('number', a_bpuic)['designationOfficial']
-    b_name = get_service_point('number', b_bpuic)['designationOfficial']
+    a_name, b_name = _sp_name_for_bpuic(a_bpuic), _sp_name_for_bpuic(b_bpuic)
     tr = OJP_TR_TEMPLATE.strip().replace("{{timestamp}}", now_iso8601)
     tr = tr.replace("{{origin_ref}}", str(a_bpuic)).replace("{{origin_name}}", a_name)
     tr = tr.replace("{{destin_ref}}", str(b_bpuic)).replace("{{destin_name}}", b_name)
@@ -60,7 +65,7 @@ def ojp20_triprequest(a_bpuic: str, b_bpuic: str, departure_time_iso8601 = _now_
         try:
             return status, size, xml_to_dict(response.content)
         except Exception as e:
-            return status, size, {"ERROR": f"Failed to render response {response_str[:30]}... as a dict.", "Excpetion": str(e)}
+            return status, size, {"ERROR": f"Failed to render response {response_str[:30]}... as a dict.", "Exception": str(e)}
 
     return status, size, response_str
 
