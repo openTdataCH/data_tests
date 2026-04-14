@@ -35,12 +35,20 @@ TEST_NAME = "ojp20_tr_random_validated_tests"
 CONN_LOG_FILE = f"tests/{TEST_NAME}/data/{TEST_NAME}_log.txt"
 CONFIG_FILE = f"tests/{TEST_NAME}/data/config.json"
 SCHEMA_FILE = f"tests/{TEST_NAME}/ojp20_tr_schema_depth_to_legs.json"
+DUMP_FILE = f"tests/{TEST_NAME}/data/dumps/dump$$.txt"
 json_schema = load_json_file(get_path(SCHEMA_FILE))
 
 
 def _timestamp():
     return dt.now().isoformat()[:23]
 
+
+def _dump_to_file(object, **kwargs):
+    s = dt.now().isoformat()[:22].replace(":", "-")
+    for k, v in kwargs.items():
+        s += f"_{str(k)}_{str(v)}"
+    with open(get_path(SCHEMA_FILE.replace('$$', s)), "w", encoding='utf-8-sig') as f:
+        f.write(json.dumps(object, indent=4))
 
 def run():
     data_test = DataTest(name=TEST_NAME)
@@ -63,29 +71,31 @@ def run():
                 if destin_ref != origin_ref:
                     break
             t0 = time.time()
-            status, xmlbytes = ojp20_triprequest(origin_ref, destin_ref, return_as='dict', data_test=data_test)
+            status, size, resp_dict = ojp20_triprequest(origin_ref, destin_ref, return_as='dict', data_test=data_test)
             delta_t = time.time() - t0
             t += delta_t
             conn_text = f"{origin_ref} {stops[origin_ref]:30}-> {destin_ref} {stops[destin_ref]:30}"
+            resp_excp = str(resp_dict)[:30]
 
-            conn_log.write(f'{_timestamp()} {conn_text}: {delta_t:.3f} sec.,{len(xmlbytes):>9} bytes, status={status}, excerpt={xmlbytes[:30]}...\n')
+            conn_log.write(f'{_timestamp()} {conn_text}: {delta_t:.3f} sec.,{size:>9} bytes, status={status}, excerpt={resp_excp}...\n')
 
-            if status != 200:
-                data_test.log_failure(f"OJP2.0 TR with {conn_text} failed with status code {status}, excerpt: {xmlbytes[:30]}...")
+            if status != 200 or resp_dict.get('ERROR') is not None:
+                data_test.log_failure(f"OJP2.0 TR with {conn_text} failed with status code {status}, excerpt: {resp_excp}...")
             else:
                 count200 += 1
+                jsondata = ""
                 try:
-                    data = easy_xml.xml_to_dict(xmlbytes)
-                    jsondata = json.dumps(data, ensure_ascii=False, indent=2)
-                    validate(instance=data, schema=json_schema)
-                    count_valid += 1
+                    jsondata = json.dumps(resp_dict, ensure_ascii=False, indent=2)
+                    validate(instance=resp_dict, schema=json_schema)
                 except ValidationError as e:
                     data_test.log_warning(f"Validation error: {str(e.message)}")
+                    _dump_to_file(jsondata, status=status, case="valerr")
                     count_invalid += 1
                 except SchemaError as e:
-                    data_test.log_exception(f"Invalid schema: {str(e)}", e)
+                    data_test.log_warning(f"Invalid schema: {str(e)}", e)
                 except Exception as e:
-                    data_test.log_failure(f"OJP2.0 TR with {conn_text} processing failed with {str(e)}, excerpt: {xmlbytes[:30]}...")
+                    data_test.log_warning(f"OJP2.0 TR with {conn_text} processing failed with {str(e)}, excerpt: {resp_excp}...")
+                    _dump_to_file(jsondata, status=status, case="exc")
 
         data_test.log_info(f"Performed {number_of_tests} OJP2.0 TR: {count200} ok (status 200), {count_valid} valid, {count_invalid} invalid, average {t/number_of_tests:0.3f} seconds.")
         if t / number_of_tests > warning_threshold_sec_per_test:

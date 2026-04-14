@@ -1,12 +1,10 @@
 """A simple "bridge" from XML to JSON, allowing to map XML-data to a (maybe incomplete) JSON or Python dict/list copy of it.
 
 """
-import lxml
-from lxml.etree import _Element
-from lxml import etree as ET2
-import xml.etree.ElementTree as ET
-import json
 from collections import defaultdict
+
+from lxml import etree as et
+from lxml.etree import _Element
 
 
 def _short_ns(ns_dict: dict, s: str) -> str:
@@ -47,18 +45,18 @@ def _element_to_dict(elem, ns_dict):
 
 def prettify_xml_bytes(xml_bytes: bytes, encoding: str = "utf-8") -> str:
     """Parse rough XML bytes and return a prettified string (with an XML declaration)."""
-    parser = etree.XMLParser(recover=True)           # tolerate malformed/rough XML
-    root = etree.fromstring(xml_bytes, parser=parser)
-    pretty_bytes = etree.tostring(root, encoding=encoding, xml_declaration=True, pretty_print=True, standalone=False)
+    parser = et.XMLParser(recover=True)           # tolerate malformed/rough XML
+    root = et.fromstring(xml_bytes, parser=parser)
+    pretty_bytes = et.tostring(root, encoding=encoding, xml_declaration=True, pretty_print=True, standalone=False)
     return pretty_bytes.decode(encoding)
 
 
 def xml_to_dict(source: object) -> dict:
     """Convert an XML source (bytes, str or lxml ElementTree) into a python dict/list representation, or a JSON"""
     if type(source) == bytes:
-        root = ET2.fromstring(source)
+        root = et.fromstring(source)
     if type(source) == str:
-        root = ET2.fromstring(source.encode('utf-8'))
+        root = et.fromstring(source.encode('utf-8'))
     if type(source) == _Element:
         root = source
     if root is None:
@@ -74,6 +72,7 @@ def xml_to_dict(source: object) -> dict:
 if __name__ == "__main__":
     print(f"{__file__} - simple tests")
     xmlbytes = b"<root><child attr='1'>text<sub>more</sub></child><p>one</p></root>"
+    print(prettify_xml_bytes(xmlbytes))
     print(xml_to_dict(xmlbytes))
     print(xml_to_dict(xmlbytes.decode('utf-8')))
-    print(xml_to_dict(ET2.fromstring(xmlbytes)))
+    print(xml_to_dict(et.fromstring(xmlbytes)))
