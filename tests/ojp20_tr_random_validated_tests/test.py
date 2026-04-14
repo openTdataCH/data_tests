@@ -47,8 +47,9 @@ def _dump_to_file(object, **kwargs):
     s = dt.now().isoformat()[:22].replace(":", "-")
     for k, v in kwargs.items():
         s += f"_{str(k)}_{str(v)}"
-    with open(get_path(SCHEMA_FILE.replace('$$', s)), "w", encoding='utf-8-sig') as f:
+    with open(get_path(DUMP_FILE.replace('$$', s)), "w", encoding='utf-8-sig') as f:
         f.write(json.dumps(object, indent=4))
+
 
 def run():
     data_test = DataTest(name=TEST_NAME)
