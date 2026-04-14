@@ -24,7 +24,6 @@ from configuration import get_prop, CONFIG
 from utilities.mail_utilities import send_mail, recipients_that_are_now_is_in_allowed_time_window
 from utilities.template_utilities import Template
 from utilities.test_utilities import DataTest, html_report_from_json
-from datetime import datetime as dt
 
 LOG_FILE = "data/logs/test_runner.log"
 logging.basicConfig(handlers=[logging.FileHandler(LOG_FILE, 'a', 'utf-8')], level=logging.INFO, format='%(asctime)s: %(levelname)s: %(message)s')
