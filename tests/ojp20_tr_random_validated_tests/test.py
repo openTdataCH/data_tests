@@ -87,7 +87,10 @@ def run():
                         jsondata = json.dumps(resp_dict, ensure_ascii=False, indent=2)
                         validate(instance=resp_dict, schema=json_schema)
                     except ValidationError as e:
-                        data_test.log_warning(f"Validation error: {str(e.message)}")
+                        msg = str(e.message)
+                        if len(msg) > 100:
+                            msg = msg[:50] + "..." + msg[-50:]
+                        data_test.log_warning(f"Validation error: {msg}")
                         _dump_to_file(jsondata, status=status, case="valerr")
                         count_invalid += 1
                     except SchemaError as e:

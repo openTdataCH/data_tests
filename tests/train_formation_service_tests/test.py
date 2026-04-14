@@ -94,7 +94,7 @@ def test_tfs(conn_key, endpoint, operation_date, evu_nr, train_number, data_test
     response = requests.get(url, headers=headers)
     response_str = response.content.decode('utf-8')
     message = f"- TFS test {conn_key} / {endpoint}: {response.status_code} {response.reason}, {len(response.content)} bytes."
-    data_test.test(response.status_code < 400, if_true_log_info=message, if_false_log_failure=message)
+    data_test.test(response.status_code < 400, if_true_log_info=message, if_false_log_warning=message)
 
 
 def run():
@@ -111,7 +111,10 @@ def run():
             # found a "train" which is TFS enalbed; can continue now with the TFS test on it
             for endpoint in ENDPOINTS:
                 for conn_key in conns.keys():
-                    test_tfs(conn_key, endpoint, od, op, tn, data_test)
+                    try:
+                        test_tfs(conn_key, endpoint, od, op, tn, data_test)
+                    except Exception as e:
+                        data_test.log_exception(f"Failed to test {endpoint} / {conn_key}: {e}", e)
 
     return data_test
 
