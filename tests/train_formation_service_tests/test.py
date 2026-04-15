@@ -63,7 +63,6 @@ def random_pair_of_stops(stops: list) -> tuple:
 
 def get_ojp20_tr_first_tfs_enabled_train_leg(origin_ref: str, destin_ref: str, data_test: DataTest) -> tuple:
     """From the given OJP 2.0 TR, extracts the first op_day, TFS-enabled operator and train number it can find, or None."""
-    od, op, tn = None, None, None
     try:
         status, size, ojpdict = ojp20_triprequest(origin_ref, destin_ref, return_as='dict')
         trips = ojpdict['OJP']['OJPResponse']['siri:ServiceDelivery']['OJPTripDelivery']['TripResult']
@@ -82,7 +81,7 @@ def get_ojp20_tr_first_tfs_enabled_train_leg(origin_ref: str, destin_ref: str, d
                             return od, op, tn
     except Exception as e:
         data_test.log_warning(f"Failed to get a train from given OJP20 TR response for {origin_ref}, {destin_ref}: {e}")
-    return od, op, tn
+    return None, None, None
 
 
 def test_tfs(conn_key, endpoint, operation_date, evu_nr, train_number, data_test):
@@ -102,11 +101,20 @@ def run():
     if CONFIG is None:
         raise ValueError("config.json not found, test terminated.")
     stop_ids = list(CONFIG['stops'].keys())
+    number_of_tests = CONFIG['number_of_tests']
     conns = CONFIG['connections']
-    for i in range(0, CONFIG['number_of_tests']):
-        origin_ref, destin_ref = random_pair_of_stops(stop_ids)
-        od, op, tn = get_ojp20_tr_first_tfs_enabled_train_leg(origin_ref, destin_ref, data_test)
-        if od and op and tn:
+    remaining_attempts = 5 * number_of_tests  # to limit the number of attempts at OJP
+    for i in range(0, number_of_tests):
+        od, op, tn = None, None, None
+        while tn is None:
+            if remaining_attempts <= 0:
+                data_test.log_warning(f"Reached limit of OJP TR calls.")
+                break
+            remaining_attempts = remaining_attempts - 1
+            origin_ref, destin_ref = random_pair_of_stops(stop_ids)
+            od, op, tn = get_ojp20_tr_first_tfs_enabled_train_leg(origin_ref, destin_ref, data_test)
+
+        if tn and op and od:
             data_test.log_info(f"Testing {od} / {op} / {tn} now:")
             # found a "train" which is TFS enalbed; can continue now with the TFS test on it
             for endpoint in ENDPOINTS:
