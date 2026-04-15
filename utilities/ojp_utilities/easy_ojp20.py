@@ -6,9 +6,9 @@ Provides:
   - returns either the full response, or some of the response as a simple JSON structure.
 
 """
-import json
 from zoneinfo import ZoneInfo
 
+import json
 import requests
 from datetime import datetime as dt
 from lxml import etree
@@ -18,9 +18,7 @@ from utilities.service_points_utilities.easy_sp import get_service_point
 from utilities.test_utilities import DataTest
 from utilities.xml_utilities.easy_xml import xml_to_dict
 from utilities.xml_utilities.xml_various_utilities import prettify_xml_bytes
-
-from jsonschema import validate, ValidationError, SchemaError
-
+from utilities.string_utilities import strip_html_tags
 
 session = requests.session()
 headers = {"Authorization": f"Bearer {get_prop('key_ojp20')}", "Content-Type": "application/xml; charset=utf-8"}
@@ -29,11 +27,12 @@ headers = {"Authorization": f"Bearer {get_prop('key_ojp20')}", "Content-Type": "
 def _now_iso8601():
     return dt.now(tz=ZoneInfo("Europe/Berlin")).isoformat()
 
+
 def _sp_name_for_bpuic(bpuic: str):
     sp = get_service_point('number', bpuic)
     if sp is None:
         raise ValueError(f"No service point known for BPUIC {bpuic}.")
-    return sp.get('designationOfficial')
+    return strip_html_tags(sp.get('designationOfficial'))
 
 
 def ojp20_triprequest(a_bpuic: str, b_bpuic: str, departure_time_iso8601 = _now_iso8601(), return_as = "str", data_test: DataTest = None) -> tuple:
