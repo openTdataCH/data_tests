@@ -81,7 +81,8 @@ def get_ojp20_tr_first_tfs_enabled_train_leg(origin_ref: str, destin_ref: str, d
                         if od and op in TFS_ENABLED_OPS.keys() and tn:
                             return od, op, tn
     except Exception as e:
-        data_test.log_warning(f"Failed to get a train from given OJP20 TR response for {origin_ref}, {destin_ref}: {e}")
+        # this may happen, probably not a problem -- just log it as 'info' and ignore it otherwise.
+        data_test.log_info(f"Failed to get a train from given OJP20 TR response for {origin_ref}, {destin_ref}: {e}.")
     return None, None, None
 
 
