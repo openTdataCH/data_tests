@@ -115,7 +115,7 @@ def run():
             od, op, tn = get_ojp20_tr_first_tfs_enabled_train_leg(origin_ref, destin_ref, data_test)
 
         if tn and op and od:
-            data_test.log_info(f"Testing {od} / {op} / {tn} now:")
+            data_test.log_info(f"Testing op. day={od}, operator={op}/{TFS_ENABLED_OPS[op]}, trainnumber={tn}:")
             # found a "train" which is TFS enalbed; can continue now with the TFS test on it
             for endpoint in ENDPOINTS:
                 for conn_key in conns.keys():
