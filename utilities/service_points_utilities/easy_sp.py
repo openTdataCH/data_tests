@@ -47,6 +47,10 @@ def get_service_point(key: str, value: str) -> dict:
             return sp
     return None
 
+def sp_name(number: str) -> str:
+    """Convenience function go get the service point name 'designationOfficial' for a given BPUIC number. """
+    sp = get_service_point('number', str(number))
+    return "" if sp is None else sp['designationOfficial']
 
 
 if __name__ == '__main__':

@@ -30,6 +30,7 @@ from datetime import datetime as dt
 from utilities.json_utilities import load_json_file
 from utilities.test_utilities import DataTest
 from utilities.ojp_utilities.easy_ojp20 import ojp20_triprequest
+from utilities.service_points_utilities.easy_sp import sp_name
 
 ENDPOINTS = ("formations_vehicle_based", "formations_stop_based", "formations_full")
 
@@ -115,7 +116,7 @@ def run():
             od, op, tn = get_ojp20_tr_first_tfs_enabled_train_leg(origin_ref, destin_ref, data_test)
 
         if tn and op and od:
-            data_test.log_info(f"Testing op. day={od}, operator={op}/{TFS_ENABLED_OPS[op]}, trainnumber={tn}:")
+            data_test.log_info(f"Testing op. day={od}, operator={op}/{TFS_ENABLED_OPS[op]}, trainnumber={tn} ({origin_ref}/{sp_name(origin_ref)}->{destin_ref}/{sp_name(destin_ref)}):")
             # found a "train" which is TFS enalbed; can continue now with the TFS test on it
             for endpoint in ENDPOINTS:
                 for conn_key in conns.keys():
