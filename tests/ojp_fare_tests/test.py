@@ -187,7 +187,7 @@ def run():
                 data_test.log_failure(f"{test_id} No price found for class {travel_class}")
 
     except Exception as e:
-        data_test.log_exception("Error when executing OJP Test", e)
+        data_test.log_exception(f"Error when executing OJP Test {e}.", e)
 
     return data_test
 
