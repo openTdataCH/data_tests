@@ -16,10 +16,11 @@ def now_iso8601():
 
 def display_report_from_json(json_data: dict):
     s = f"Test report for test '{json_data.get('name')}':\n"
-    s += f"Description: {json_data.get('description')}\n"
-    s += f"n_warnings : {json_data.get('n_warnings')}\n"
-    s += f"n_failures : {json_data.get('n_warnings')}\n"
-    s += f"exceptions : {json_data.get('exceptions')}\n"
+    s += f"Description : {json_data.get('description')}\n"
+    s += f"n_warnings  : {json_data.get('n_warnings')}\n"
+    s += f"n_failures  : {json_data.get('n_warnings')}\n"
+    s += f"n_exceptions: {json_data.get('n_exceptions')}\n"
+    s += f"exceptions  : {str(json_data.get('exceptions'))}\n"
     s += "Logs:\n"
     for log in json_data['logs'].splitlines():
         s += f"    {log}\n"
@@ -96,13 +97,12 @@ class DataTest():
         return condition
 
     def to_dict(self) -> dict:
-        # silent:  self.log_info(f"Test report summary: EXCEPTIONS={len(self.exceptions)}, FAILURES={self.n_failures}, WARNINGS={self.n_warnings}.")
         return {
             "name": self.name,
             "logs": "\n".join(self.logs),
             "n_warnings": self.n_warnings,
             "n_failures": self.n_failures,
-            "n_exceptions": len(self.exceptions),
+            "n_exceptions": self.n_exceptions,
             "exceptions": str(self.exceptions)
         }
 
@@ -111,7 +111,7 @@ class DataTest():
 
     def __str__(self):
         s = (f"TestReport for test '{self.name}':\n"
-             f"  - n_exceptions: {len(self.exceptions)}\n"
+             f"  - n_exceptions: {self.n_exceptions}\n"
              f"  - n_failures  : {self.n_failures}\n"
              f"  - n_warnings  : {self.n_warnings}\n"
              f"  - exceptions  : {str(self.exceptions)}\n"
@@ -123,37 +123,39 @@ class DataTest():
 
 if __name__ == "__main__":
     print(f"{__file__}: Simple tests")
-    tr = DataTest("test1")
+    data_test = DataTest("test1")
 
-    d = tr.to_dict()
+    d = data_test.to_dict()
     assert d['name'] == 'test1'
     assert d["n_warnings"] == 0
     assert d["n_failures"] == 0
     assert d["n_exceptions"] == 0
-    assert len(d["logs"].splitlines()) == 2
+    assert len(d["logs"].splitlines()) == 1
     assert 'started' in d["logs"]
 
-    tr.log_warning("added a warning.")
-    d = tr.to_dict()
+    data_test.log_warning("added a warning.")
+    d = data_test.to_dict()
     assert d["n_warnings"] == 1
     assert d["n_failures"] == 0
     assert d["n_exceptions"] == 0
-    assert len(d["logs"].splitlines()) == 4
+    assert len(d["logs"].splitlines()) == 2
 
-    tr.log_failure("added a failed test.")
-    d = tr.to_dict()
+    data_test.log_failure("added a failed test.")
+    d = data_test.to_dict()
     assert d["n_warnings"] == 1
     assert d["n_failures"] == 1
     assert d["n_exceptions"] == 0
-    assert len(d["logs"].splitlines()) == 6
+    assert len(d["logs"].splitlines()) == 3
 
-    tr.log_exception("added an exception.", exception=ValueError("an error"))
-    d = tr.to_dict()
+    data_test.log_exception("added an exception.", exception=ValueError("an error"))
+    d = data_test.to_dict()
     assert d["n_warnings"] == 1
     assert d["n_failures"] == 1
     assert d["n_exceptions"] == 1
-    assert len(d["logs"].splitlines()) == 8
+    assert len(d["logs"].splitlines()) == 4
 
-    print(d["logs"])
-    print(d)
     print("passed all tests")
+    print("Dict representation:")
+    print(d)
+    print("Object representation:")
+    print(data_test)
