@@ -5,3 +5,4 @@ venv/**
 .venv/**
 *.sh
 **/data/
+tests/testing_andre_tests/**
