@@ -35,7 +35,7 @@ def log_with_log_level(log_level: LoggerLevelEnum, message: str, data_test: Data
             data_test.log_exception(message)
 
 
-def log_list(list: Iterable | Sized, data_test: DataTest, list_message: str, element_message: str,
+def log_list(a_list: Iterable | Sized, data_test: DataTest, list_message: str, element_message: str,
              log_element_level: LoggerLevelEnum = LoggerLevelEnum.INFO_WITH_BANG,
              log_level_at_attention: LoggerLevelEnum = LoggerLevelEnum.WARNING,
              attention_threshhold: int = 50,
@@ -44,10 +44,10 @@ def log_list(list: Iterable | Sized, data_test: DataTest, list_message: str, ele
              additional_object=None):
     """
 
-    :param list: the list (or other collection) to be logged
+    :param a_list: the list (or other collection) to be logged
     :param data_test: to log
-    :param list_message: the message for the entire list is an f-string with acces to count and additional_object variable
-    :param element_message: the message for one element of the list is an f-string with acces to element and additional_object variable
+    :param list_message: the message for the entire list is an f-string with access to count and additional_object variable
+    :param element_message: the message for one element of the list is an f-string with access to element and additional_object variable
     :param log_element_level: the log level for the element log lines
     :param log_level_at_attention: the log level at "attention"
     :param attention_threshold: the minimum size indication "attention"
@@ -56,18 +56,18 @@ def log_list(list: Iterable | Sized, data_test: DataTest, list_message: str, ele
     :param additional_object: an additional object which can be used in the list_message and element_message f-strings (e.g. a dict with additional information for the element)
     :return: Nothing, uses log functions from data_test objects
     """
-    count = len(list)  # used in eval
+    count = len(a_list)  # used in eval
     list_message_str = eval(f'f"{list_message}"')
-    if len(list) >= attention_threshhold:
+    if len(a_list) >= attention_threshhold:
         log_with_log_level(log_level_at_attention, list_message_str, data_test)
     else:
         log_with_log_level(log_list_level, list_message_str, data_test)
-    if len(list) <= max_logging_length:
-        for element in list:
+    if len(a_list) <= max_logging_length:
+        for element in a_list:
             log_with_log_level(log_element_level, eval(f'f"{element_message}"'), data_test)
     else:
         log_with_log_level(log_list_level,
-                           f"List length ({len(list)}) considered to be too long (threshold {max_logging_length}), refusing to log individual elements",
+                           f"List length ({len(a_list)}) considered to be too long (threshold {max_logging_length}), refusing to log individual elements",
                            data_test)
 
 
