@@ -7,7 +7,7 @@ These 2 arguments must be passed: 1. test name - 2. alert group (defined in the 
 
 The test runner does these main steps:
 1. imports the desired tests.py module, calls its run() method, passing the CONFIG and variant to it if available.
-2. waits for its repsonse, which should be a test report dict or TestReport object.
+2. waits for its response, which should be a test report dict or TestReport object.
 3. stores the test report at TEST_REPORTS_FOLDER.
 4. if the test has errors, it immediately sends an e-mail to the given alert group.
 """
