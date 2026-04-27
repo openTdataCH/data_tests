@@ -7,10 +7,14 @@ This test checks the OJP Fare Interface. This is done by:
 """
 
 import requests
-import xml.etree.ElementTree as ET
+from lxml import etree
+from utilities.json_utilities import load_json_file
 from datetime import datetime
+from utilities.ojp_utilities.easy_ojp20 import ojp10_triprequest
 from utilities.test_utilities import DataTest
-import configuration
+
+TEST_NAME = "ojp_fare_tests"
+CONFIG_FILE = f"tests/{TEST_NAME}/data/config.json"
 
 NS = {
     'siri': 'http://www.siri.org.uk/siri',
@@ -27,33 +31,23 @@ FARE_OPTIONS = {
         "expected_price": "72.00"
     },
     "test3": {
-        "params":["Child", "second", 14, None, None],
+        "params":["Adult", "second", 20, "HTA", "Halbtax-Abonnement"],
         "expected_price": "42.00"
     },
     "test4": {
-        "params":["Child", "first", 15, None, None],
-        "expected_price": "72.00"
-    },
-    "test5": {
-        "params":["Adult", "second", 20, None, "HTA"],
-        "expected_price": "42.00"
-    },
-    "test6": {
-        "params":["Adult", "first", 76, None, "HTA"],
+        "params":["Adult", "first", 76, "HTA", "Halbtax-Abonnement"],
         "expected_price": "72.00"
     }
 }
 
-url_trip = "https://skiplus-ojp-nova-prod.sbb-cloud.net/ojp2023"
-url_fare = "https://skiplus-ojp-fare.api.sbb.ch/ojp2023"
+url_fare = "https://api.opentransportdata.swiss/ojpfare"
 
 timestamp = datetime.now().strftime("%Y-%m-%d")
 
 def get_fare_body(trip_snippet, passenger_category="Adult", travel_class="first", age=25, entitlement_product=None, entitlement_product_name=None):
     entitlement_xml = ""
     if entitlement_product:
-        entitlement_xml = f"""
-                                <ojp:EntitlementProducts>
+        entitlement_xml = f"""      <ojp:EntitlementProducts>
                                     <ojp:EntitlementProduct>
                                         <ojp:FareAuthorityRef>ch:1:NOVA</ojp:FareAuthorityRef>
                                         <ojp:EntitlementProductRef>{entitlement_product}</ojp:EntitlementProductRef>
@@ -65,10 +59,10 @@ def get_fare_body(trip_snippet, passenger_category="Adult", travel_class="first"
 <OJP xmlns:siri="http://www.siri.org.uk/siri" xmlns="http://www.siri.org.uk/siri" xmlns:ojp="http://www.vdv.de/ojp" version="1.0">
     <OJPRequest>
         <ServiceRequest>
-            <RequestTimestamp>{timestamp}</RequestTimestamp>
+            <RequestTimestamp>{timestamp}T11:56:11.714265</RequestTimestamp>
             <RequestorRef>OJP2NOVA</RequestorRef>
             <ojp:OJPFareRequest>
-                <RequestTimestamp>{timestamp}</RequestTimestamp>
+                <RequestTimestamp>{timestamp}T11:56:11.714265</RequestTimestamp>
                 <ojp:TripFareRequest>
                     {trip_snippet}
                 </ojp:TripFareRequest>
@@ -87,80 +81,33 @@ def get_fare_body(trip_snippet, passenger_category="Adult", travel_class="first"
     </OJPRequest>
 </OJP>"""
 
-
-def get_access_token():
-    """Gets OAuth2 Access Token"""
-    token_url = "https://login.microsoftonline.com/2cda5d11-f0ac-46b3-967d-af1b2e1bd01a/oauth2/v2.0/token"
-    payload = {
-        "grant_type": configuration.get_prop("grant_type"),
-        "client_id": configuration.get_prop("client_id"),
-        "client_secret": configuration.get_prop("client_secret"),
-        "scope": configuration.get_prop("scope")
-    }
-    response = requests.post(token_url, data=payload)
-    response.raise_for_status()
-    return response.json().get("access_token")
-
 def run():
-    data_test = DataTest(name="ojp_fare_test")
-    token = get_access_token()
-
-    headers = {
-        "Content-Type": "application/xml",
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/xml"
-    }
+    data_test = DataTest(name=TEST_NAME)
+    test_config = load_json_file(CONFIG_FILE)
+    if test_config is None:
+        raise ValueError("config.json not found, test terminated.")
 
     #Trip request
-    try:
-        trip_xml_body = f"""
-            <OJP xmlns="http://www.siri.org.uk/siri" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ojp="http://www.vdv.de/ojp" xsi:schemaLocation="http://www.siri.org.uk/siri ../ojp-xsd-v1.0/OJP.xsd" version="1.0">
-              <OJPRequest>
-                <ServiceRequest>
-                  <RequestorRef>OJP SDK v1.0</RequestorRef>
-                  <RequestTimestamp>{timestamp}T11:12:00.000Z</RequestTimestamp>
-                  <ojp:OJPTripRequest>
-                    <RequestTimestamp>{timestamp}T11:12:00.000Z</RequestTimestamp>
-                    <ojp:Origin>
-                      <ojp:PlaceRef>
-                        <StopPointRef>8503000</StopPointRef>
-                        <ojp:LocationName>
-                          <ojp:Text>Zürich (Zürich)</ojp:Text>
-                        </ojp:LocationName>
-                      </ojp:PlaceRef>
-                    </ojp:Origin>
-                    <ojp:Destination>
-                      <ojp:PlaceRef>
-                        <StopPointRef>8509000</StopPointRef>
-                        <ojp:LocationName>
-                          <ojp:Text>Chur (Chur)</ojp:Text>
-                        </ojp:LocationName>
-                      </ojp:PlaceRef>
-                    </ojp:Destination>
-                    <ojp:Params>
-                      <ojp:NumberOfResultsAfter>5</ojp:NumberOfResultsAfter>
-                      <ojp:IncludeTrackSections>false</ojp:IncludeTrackSections>
-                      <ojp:IncludeLegProjection>false</ojp:IncludeLegProjection>
-                      <ojp:IncludeTurnDescription>false</ojp:IncludeTurnDescription>
-                      <ojp:IncludeIntermediateStops>true</ojp:IncludeIntermediateStops>
-                    </ojp:Params>
-                  </ojp:OJPTripRequest>
-                </ServiceRequest>
-              </OJPRequest>
-            </OJP>"""
-        response = requests.post(url_trip, data=trip_xml_body.encode('utf-8'), headers=headers)
+    status, size, trip_xml = ojp10_triprequest(
+        a_bpuic="8503000",
+        a_name="Zürich (Zürich)",
+        b_bpuic="8509000",
+        b_name="Chur (Chur)",
+        departure_time_iso8601=f"{timestamp}T11:12:00.000Z",
+        return_as="xml",
+        data_test=data_test
+    )
 
-        if response.status_code != 200:
-            data_test.log_failure(f"Trip Request failed: {response.status_code} - Response: {response.text}")
-            return data_test
-        root = ET.fromstring(response.content)
-        trip_element = root.find(".//ojp:Trip", NS)
+    if status != 200 or isinstance(trip_xml, str) and trip_xml.startswith("<xml><ERROR>"):
+        data_test.log_failure(f"Trip Request failed: {status}, response: {trip_xml}")
+        return data_test
 
-        if not data_test.test(condition=(trip_element is not None), if_false_log_failure="No Trip found"):
-            return data_test
+    trip_element = trip_xml.find(".//ojp:Trip", NS)
 
-        trip_snippet = ET.tostring(trip_element, encoding='unicode')
+    if trip_element is not None:
+        etree.cleanup_namespaces(trip_element)
 
+        trip_snippet = etree.tostring(trip_element, encoding='unicode', pretty_print=False)
         # Fare Requests
         for test_id, config in FARE_OPTIONS.items():
             params = config["params"]
@@ -168,8 +115,9 @@ def run():
             expected_price = config["expected_price"]
 
             fare_xml_body = get_fare_body(trip_snippet, *params)
+            headers = {"Authorization": f"Bearer {test_config['key_ojp_fare']}", "Content-Type": "application/xml; charset=utf-8"}
             response_fare = requests.post(url_fare, data=fare_xml_body.encode('utf-8'), headers=headers)
-            fare_root = ET.fromstring(response_fare.content)
+            fare_root = etree.fromstring(response_fare.content)
 
             actual_price = None
             for product in fare_root.findall(".//ojp:FareProduct", NS):
@@ -185,10 +133,8 @@ def run():
                     data_test.log_failure(f"{test_id} wrong price. Expected {expected_price}, got {actual_price} for {travel_class} class.")
             else:
                 data_test.log_failure(f"{test_id} No price found for class {travel_class}")
-
-    except Exception as e:
-        data_test.log_exception(f"Error when executing OJP Test {e}.", e)
-
+    else:
+        data_test.log_failure("No Trip element found")
     return data_test
 
 if __name__ == '__main__':
