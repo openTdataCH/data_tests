@@ -26,6 +26,7 @@ HRDF_HEADERS = {
     "bfkoord": "*F 02 1",
     "bhfart": "*F 30 1",
     "bitfeld": "*F 05 1",
+    "bitfield": "*F 05 1",
     "eckdaten": "*F 04 1",
     "fplan": "*F 03 1",
     "infotext": "*F 11 1",

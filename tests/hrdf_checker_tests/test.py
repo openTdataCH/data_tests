@@ -1,8 +1,8 @@
-"""A simple test demo example which does a basic test on an HRDF resource
+"""A test for the HRDF files
 
 The test does these checks:
-- load HRDF file from opentransportdata.swiss
-- do a simple size check
+- load HRDF file (zipped) from opentransportdata.swiss
+- various tests of the individual files
 
 The run method requires no config at all (hence, no 'config' parameter).
 """

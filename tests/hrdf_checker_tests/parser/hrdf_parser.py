@@ -120,7 +120,6 @@ class HRDFParser:
     INFOTEXT_IT_FILE_NAME = INFOTEXT_PREFIX + Language.IT.value
     ECKDATEN_FILE_NAME = "ECKDATEN"
     ZUGART_FILE_NAME = "ZUGART"
-    """to do: ev. Vereinheitlichung der Anführungs-/Schlusszeichen"""
     LIST_OF_EXPECTED_FILES = ["ATTRIBUT", BAHNHOF_FILE_NAME, "BETRIEB_DE", "BETRIEB_EN",
                               "BETRIEB_FR", "BETRIEB_IT", "BFKOORD_LV95", BFKOORD_WGS_FILE_NAME,
                               "BFPRIOS", "BHFART", "BITFELD", "BITFIELD", "DURCHBI", ECKDATEN_FILE_NAME,
