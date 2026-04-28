@@ -43,7 +43,7 @@ def _timestamp():
 def _dump_to_file(object, **kwargs):
     s = dt.now().isoformat()[:22].replace(":", "-")
     for k, v in kwargs.items():
-        s += f"_{str(k)}_{str(v)}"
+        s += f"_{str(k)}_{str(v).replace(' ', '_')}"
     with open(get_path(DUMP_FILE.replace('$$', s)), "w", encoding='utf-8-sig') as f:
         f.write(object)
 
@@ -74,12 +74,15 @@ def run():
                 delta_t = time.time() - t0
                 t += delta_t
                 conn_text = f"{origin_ref} {str(stops[origin_ref]):30}-> {destin_ref} {str(stops[destin_ref]):30}"
-                resp_excp = str(resp_dict)[:30]
+                resp_str = str(resp_dict)
+                resp_excp = resp_str[:30]
 
                 conn_log.write(f'{_timestamp()} {conn_text}: {delta_t:.3f} sec.,{size:>9} bytes, status={status}, excerpt={resp_excp}...\n')
 
                 if status != 200 or resp_dict.get('ERROR') is not None:
                     data_test.log_failure(f"OJP2.0 TR with {conn_text} failed with status code {status}, excerpt: {resp_excp}...")
+                elif "TRIP_NOTRIPFOUND" in resp_str:
+                    data_test.log_warning(f"OJP2.0 TR with {conn_text} got a TRIP_NOTRIPFOUND response.")
                 else:
                     count200 += 1
                     jsondata = ""
@@ -106,45 +109,6 @@ def run():
             data_test.log_warning(f"Test time of {t/number_of_tests:.3f} sec. exceded {warning_threshold_sec_per_test:.3f} sec. threshold.")
 
     return data_test
-
-
-OJP_TR_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
-<OJP xmlns="http://www.vdv.de/ojp" xmlns:siri="http://www.siri.org.uk/siri" version="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.vdv.de/ojp OJP_changes_for_v1.1/OJP.xsd">
-    <OJPRequest>
-        <siri:ServiceRequest>
-            <siri:RequestTimestamp>{{timestamp}}</siri:RequestTimestamp>
-            <siri:RequestorRef>SKI+/data_tests/ojp20_random_connections_tests</siri:RequestorRef>
-            <OJPTripRequest>
-                <siri:RequestTimestamp>{{timestamp}}</siri:RequestTimestamp>
-                <Origin>
-                    <PlaceRef>
-                        <siri:StopPointRef>{{origin_ref}}</siri:StopPointRef>
-                        <Name>
-                            <Text>{{origin_name}}</Text>
-                        </Name>
-                    </PlaceRef>
-                    <DepArrTime>{{arrdep}}</DepArrTime>
-                </Origin>
-                <Destination>
-                    <PlaceRef>
-                        <siri:StopPointRef>{{destin_ref}}</siri:StopPointRef>
-                        <Name>
-                            <Text>{{destin_name}}</Text>
-                        </Name>
-                    </PlaceRef>
-                </Destination>
-                <Params>
-                    <NumberOfResults>5</NumberOfResults>
-                    <IncludeTrackSections>false</IncludeTrackSections>
-                    <IncludeLegProjection>true</IncludeLegProjection>
-                    <IncludeTurnDescription>false</IncludeTurnDescription>
-                    <IncludeIntermediateStops>false</IncludeIntermediateStops>
-                </Params>
-            </OJPTripRequest>
-        </siri:ServiceRequest>
-    </OJPRequest>
-</OJP>"""
-
 
 
 if __name__ == '__main__':
