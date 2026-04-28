@@ -312,7 +312,7 @@ def check_all_contents(file_map: Dict[str, str], data_test: DataTest):
     check_bhfart(file_map["bhfart"], data_test)
 
 
-def check_hrdf(url, data_test = None) -> DataTest:
+def check_hrdf(url, data_test = None, ignore_bitfield_file_check= False) -> DataTest:
     if data_test is None:
         data_test = DataTest(name="check_hrdf")
 
@@ -337,7 +337,9 @@ def check_hrdf(url, data_test = None) -> DataTest:
             if p:
                 file_map[name] = p
 
-        missing = [n for n in EXPECTED_FILES if n not in file_map]
+        # patch for the currently missing file in on demand as of April 26
+        expected_files = [n for n in EXPECTED_FILES if (not ignore_bitfield_file_check) or n != "bitfield"]
+        missing = [n for n in expected_files if n not in file_map]
         data_test.test(
             condition=(len(missing) == 0),
             if_false_log_failure=f"Missing files: {', '.join(missing)}"
