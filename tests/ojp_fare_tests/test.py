@@ -180,11 +180,11 @@ def run():
 
             if actual_price:
                 if actual_price == expected_price:
-                    data_test.log_info(f"{test_id} checked successfully: {actual_price} CHF found for {travel_class}.")
+                    data_test.log_info(f"{test_id} checked successfully: {actual_price} CHF found for {travel_class} class.")
                 else:
                     data_test.log_failure(f"{test_id} wrong price. Expected {expected_price}, got {actual_price} for {travel_class} class.")
             else:
-                data_test.log_failure(f"{test_id} No price found for class {travel_class}")
+                data_test.log_failure(f"{test_id} No price found for {travel_class} class.")
 
     except Exception as e:
         data_test.log_exception(f"Error when executing OJP Test {e}.", e)
