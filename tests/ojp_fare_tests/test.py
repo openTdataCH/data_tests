@@ -132,7 +132,7 @@ def run():
                 else:
                     data_test.log_failure(f"{test_id} wrong price. Expected {expected_price}, got {actual_price} for {travel_class} class.")
             else:
-                data_test.log_failure(f"{test_id} No price found for class {travel_class}")
+                data_test.log_failure(f"{test_id} No price found for {travel_class} class.")
     else:
         data_test.log_failure("No Trip element found")
     return data_test
