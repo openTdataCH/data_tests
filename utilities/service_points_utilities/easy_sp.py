@@ -8,6 +8,8 @@ sp = get_service_point('number', '1322044')
 print(sp['designationOfficial'])
 
 """
+import math
+
 import os
 import requests
 
@@ -53,11 +55,38 @@ def sp_name(number: str) -> str:
     return "" if sp is None else sp['designationOfficial']
 
 
+def approx_distance_m(sp1_number: str, sp2_number: str) -> float:
+    """Calculate the approximate distance between two services points in meters, or -1.0 if calculation fails."""
+    try:
+        sp1 = get_service_point('number', sp1_number)
+        sp2 = get_service_point('number', sp2_number)
+        c1 = float(sp1['lv95East']), float(sp1['lv95North'])
+        c2 = float(sp2['lv95East']), float(sp2['lv95North'])
+        return math.sqrt((c1[0] - c2[0]) ** 2 + (c1[1] - c2[1]) ** 2)
+
+    except:
+        return -1.0
+
+
+
+
+
+
 if __name__ == '__main__':
     print(f"{__file__} - simple tests")
-    sp1322044 = get_service_point('number', '1322044')
-    assert sp1322044 is not None
-    assert sp1322044['designationOfficial'] == 'Gravellona Toce, bivio FS'
-    print(get_service_point('number', '1322044'))
+    sp8589008 = get_service_point('number', '8589008')
+    print(f"Looked up service point {sp8589008}.")
+    assert sp8589008 is not None
+    assert sp8589008['designationOfficial'] == 'Bern, Wyleregg'
+
+    sp8576993 = get_service_point('designationOfficial', 'Papiermühle, Bahnhof')
+    print(f"Looked up service point {sp8576993}.")
+    assert sp8576993 is not None
+    assert sp8576993['number'] == '8576993'
+
+    approx_distance = approx_distance_m(sp8589008['number'], sp8576993['number'])
+    print(f"Approx distance {approx_distance:.1f} m.")
+    assert abs(approx_distance - 2560) < 100
+
     print("all well.")
 

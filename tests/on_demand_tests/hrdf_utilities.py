@@ -14,8 +14,10 @@ from typing import List, Dict, Tuple, Optional
 
 EXPECTED_FILES = [
     "attribut", "bahnhof", "betrieb", "bfkoord", "bhfart",
-    "bitfeld", "eckdaten", "fplan", "infotext", "region", "zugart"
+    "bitfeld", "bitfield", "eckdaten", "fplan", "infotext", "region", "zugart"
 ]
+
+"""to do: add entry below for BITFIELD"""
 
 HRDF_HEADERS = {
     "attribut": "*F 09 1",
@@ -24,6 +26,7 @@ HRDF_HEADERS = {
     "bfkoord": "*F 02 1",
     "bhfart": "*F 30 1",
     "bitfeld": "*F 05 1",
+    "bitfield": "*F 05 1",
     "eckdaten": "*F 04 1",
     "fplan": "*F 03 1",
     "infotext": "*F 11 1",
@@ -170,6 +173,16 @@ def check_bitfeld(path: str, data_test: DataTest):
         if_false_log_warning="'bitfeld' doesn't contain entries such as '<id> <HEX>'."
     )
 
+def check_bitfield(path: str, data_test: DataTest):
+    lines = read_text_file(path)
+    payload = [ln for ln in lines if ln.strip() and not ln.startswith("*F")]
+    pattern = re.compile(r'^\d{6,}\s+[0-9A-F]+$')
+    any_match = any(pattern.match(ln.strip()) for ln in payload)
+    data_test.test(
+        condition=any_match,
+        if_false_log_warning="'bitfield' doesn't contain entries such as '<id> <HEX>'."
+    )
+
 
 def check_eckdaten(path: str, data_test: DataTest):
     lines = read_text_file(path)
@@ -288,6 +301,7 @@ def check_all_contents(file_map: Dict[str, str], data_test: DataTest):
     check_attribut(file_map["attribut"], data_test)
     check_betrieb(file_map["betrieb"], data_test)
     check_bitfeld(file_map["bitfeld"], data_test)
+    """check_bitfield(file_map["bitfield"], data_test)"""
     check_eckdaten(file_map["eckdaten"], data_test)
     check_fplan(file_map["fplan"], data_test)
     check_infotext(file_map["infotext"], data_test)
@@ -298,7 +312,7 @@ def check_all_contents(file_map: Dict[str, str], data_test: DataTest):
     check_bhfart(file_map["bhfart"], data_test)
 
 
-def check_hrdf(url, data_test = None) -> DataTest:
+def check_hrdf(url, data_test = None, ignore_bitfield_file_check= False) -> DataTest:
     if data_test is None:
         data_test = DataTest(name="check_hrdf")
 
@@ -323,7 +337,9 @@ def check_hrdf(url, data_test = None) -> DataTest:
             if p:
                 file_map[name] = p
 
-        missing = [n for n in EXPECTED_FILES if n not in file_map]
+        # patch for the currently missing file in on demand as of April 26
+        expected_files = [n for n in EXPECTED_FILES if (not ignore_bitfield_file_check) or n != "bitfield"]
+        missing = [n for n in expected_files if n not in file_map]
         data_test.test(
             condition=(len(missing) == 0),
             if_false_log_failure=f"Missing files: {', '.join(missing)}"

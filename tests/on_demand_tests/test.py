@@ -23,7 +23,7 @@ def run():
     data_test.log_info("GTFS Flex Schema check completed.")
     check_netex(netex_url, data_test)
     data_test.log_info("NETEX Schema check completed.")
-    check_hrdf(hrdf_url, data_test)
+    check_hrdf(url=hrdf_url, data_test=data_test, ignore_bitfield_file_check=True)
     data_test.log_info("HRDF Schema check completed.")
 
     return data_test
