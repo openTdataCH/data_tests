@@ -1,6 +1,6 @@
 """Test of the OJP 2.0 API, doing a random number of OJP Trip Requests.
 
-Requires a file config.json in folder tests/data/ojp20_random_connections_test like this:
+Requires a file config.json in folder tests/ojp20_random_connections_test/data like this:
 
 {
   "number_of_tests": 20,
@@ -25,6 +25,7 @@ from jsonschema import validate, ValidationError, SchemaError
 from utilities.file_and_path_utilities import get_path
 from utilities.json_utilities import load_json_file
 from utilities.ojp_utilities.easy_ojp20 import ojp20_triprequest
+from utilities.service_points_utilities.easy_sp import get_service_point, approx_distance_m
 from utilities.test_utilities import DataTest
 
 NOW = dt.now().isoformat()
@@ -64,11 +65,20 @@ def run():
         for i in range(0, number_of_tests):
             try:
                 time.sleep(config['sleep_time'])
-                origin_ref = random.choice(stops_ids)
-                while True:
-                    destin_ref = random.choice(stops_ids)
-                    if destin_ref != origin_ref:
-                        break
+                attempts = 20
+                found_connection = False
+                while attempts > 0 and not found_connection:
+                    attempts -= 1
+                    if attempts == 0:
+                        raise ValueError("Failed to generate a random connection after 20 attempts.")
+                    try:
+                        origin_ref = random.choice(stops_ids)
+                        destin_ref = random.choice(stops_ids)
+                        if destin_ref != origin_ref and approx_distance_m(origin_ref, destin_ref) > 1000.0:
+                            found_connection = True
+                    except:
+                        pass
+
                 t0 = time.time()
                 status, size, resp_dict = ojp20_triprequest(origin_ref, destin_ref, return_as='dict', data_test=data_test)
                 delta_t = time.time() - t0
