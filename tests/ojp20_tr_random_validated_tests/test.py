@@ -42,11 +42,15 @@ def _timestamp():
 
 
 def _dump_to_file(object, **kwargs):
-    s = dt.now().isoformat()[:22].replace(":", "-")
-    for k, v in kwargs.items():
-        s += f"_{str(k)}_{str(v).replace(' ', '_')}"
-    with open(get_path(DUMP_FILE.replace('$$', s)), "w", encoding='utf-8-sig') as f:
-        f.write(object)
+    try:
+        s = dt.now().isoformat()[:22].replace(":", "-")
+        for k, v in kwargs.items():
+            s += f"_{str(k)}_{str(v).replace(' ', '_')}"
+        with open(get_path(DUMP_FILE.replace('$$', s)), "w", encoding='utf-8-sig') as f:
+            f.write(str(object))
+    except:
+        # ignore - manifests itself in missing file.
+        pass
 
 
 def run():
@@ -91,6 +95,7 @@ def run():
 
                 if status != 200 or resp_dict.get('ERROR') is not None:
                     data_test.log_failure(f"OJP2.0 TR with {conn_text} failed with status code {status}, excerpt: {resp_excp}...")
+                    _dump_to_file(conn_text + "\n\n" + resp_str, status=status, case="NOT200orERROR")
                 elif "TRIP_NOTRIPFOUND" in resp_str:
                     data_test.log_warning(f"OJP2.0 TR with {conn_text} got a TRIP_NOTRIPFOUND response.")
                 else:
