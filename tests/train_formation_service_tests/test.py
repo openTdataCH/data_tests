@@ -86,7 +86,10 @@ def get_ojp20_tr_first_tfs_enabled_train_leg(origin_ref: str, destin_ref: str, d
     return None, None, None
 
 
-def test_tfs(conn_key, endpoint, operation_date, evu_nr, train_number, data_test):
+previews_bytes_count = 0
+
+def test_tfs(conn_key, endpoint, operation_date, evu_nr, train_number, data_test, is_first = None):
+    global previews_bytes_count
     tyk_key = CONFIG['connections'][conn_key]['tyk_key']
     base_url = CONFIG['connections'][conn_key]['base_url']
     headers = {"Authorization": "bearer " + tyk_key, "Content-Type": 'application/octet-stream'}
@@ -94,8 +97,15 @@ def test_tfs(conn_key, endpoint, operation_date, evu_nr, train_number, data_test
     url = f"""{base_url}/{endpoint}?evu={evu_short}&operationDate={operation_date}&trainNumber={train_number}"""
     response = requests.get(url, headers=headers)
     response_str = response.content.decode('utf-8')
-    message = f"- TFS test {conn_key} / {endpoint}: {response.status_code} {response.reason}, {len(response.content)} bytes."
-    data_test.test(response.status_code < 400, if_true_log_info=message, if_false_log_warning=message)
+    n_bytes = len(response.content)
+    diff = 0 if is_first else n_bytes - previews_bytes_count
+    diff_message = f", ⚠ diff: {diff} bytes ⚠" if diff != 0 else ""
+    previews_bytes_count = n_bytes
+    message = f"- TFS test {conn_key} / {endpoint}: {response.status_code} {response.reason}, {n_bytes} bytes{diff_message}"
+    if response.status_code < 400:
+        data_test.log_info(f"{message}.")
+    else:
+        data_test.log_warning(f"{message}, excerpt={response_str[:100]}{'...' if len(response_str) > 100 else '.'}")
 
 
 def run():
@@ -120,11 +130,13 @@ def run():
             data_test.log_info(f"Testing op. day={od}, operator={op}/{TFS_ENABLED_OPS[op]}, trainnumber={tn} ({origin_ref}/{sp_name(origin_ref)}->{destin_ref}/{sp_name(destin_ref)}):")
             # found a "train" which is TFS enalbed; can continue now with the TFS test on it
             for endpoint in ENDPOINTS:
+                is_first = True
                 for conn_key in conns.keys():
                     try:
-                        test_tfs(conn_key, endpoint, od, op, tn, data_test)
+                        test_tfs(conn_key, endpoint, od, op, tn, data_test, is_first = is_first)
                     except Exception as e:
                         data_test.log_exception(f"Failed to test {endpoint} / {conn_key}: {e}", e)
+                    is_first = False
 
     return data_test
 
