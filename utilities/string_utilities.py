@@ -2,10 +2,17 @@
 
 """
 
-def strip_html_tags(text):
-    # escape html special characters:
-    text = text.replace(r'<', '&lt;').replace(r'>', '&gt;').replace(r'&', '&amp;').replace(r'"', '&quot;').replace("'", "&apos;")
+def strip_html_tags(text: str) -> str:
+    """In a given text (str), escape all html special characters."""
+    text = str(text).replace(r'<', '&lt;').replace(r'>', '&gt;').replace(r'&', '&amp;').replace(r'"', '&quot;').replace("'", "&apos;")
     return text
+
+
+def flatten(text: str) -> str:
+    """In a given text (str), replace line breaks (CR and LF) by spaces."""
+    text = str(text).replace('\r', ' ').replace('\n', ' ')
+    return text
+
 
 
 if __name__ == '__main__':
