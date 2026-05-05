@@ -28,6 +28,7 @@ import requests
 from datetime import datetime as dt
 
 from utilities.json_utilities import load_json_file
+from utilities.string_utilities import flatten, strip_html_tags
 from utilities.test_utilities import DataTest
 from utilities.ojp_utilities.easy_ojp20 import ojp20_triprequest
 from utilities.service_points_utilities.easy_sp import sp_name
@@ -99,13 +100,14 @@ def test_tfs(conn_key, endpoint, operation_date, evu_nr, train_number, data_test
     response_str = response.content.decode('utf-8')
     n_bytes = len(response.content)
     diff = 0 if is_first else n_bytes - previews_bytes_count
-    diff_message = f", ⚠ diff: {diff} bytes ⚠" if diff != 0 else ""
+    diff_message = f", 🐦🐦🐦 diff: {diff} bytes 🐦🐦🐦" if diff != 0 else ""
     previews_bytes_count = n_bytes
     message = f"- TFS test {conn_key} / {endpoint}: {response.status_code} {response.reason}, {n_bytes} bytes{diff_message}"
     if response.status_code < 400:
         data_test.log_info(f"{message}.")
     else:
-        data_test.log_warning(f"{message}, excerpt={response_str[:100]}{'...' if len(response_str) > 100 else '.'}")
+        excerpt = flatten(response_str[:100])
+        data_test.log_warning(f"{message}, excerpt: {excerpt}{'...' if len(excerpt) > 100 else '.'}")
 
 
 def run():
