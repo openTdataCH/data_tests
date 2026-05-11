@@ -104,6 +104,7 @@ def run():
                     try:
                         jsondata = json.dumps(resp_dict, ensure_ascii=False, indent=2)
                         validate(instance=resp_dict, schema=json_schema)
+                        count_valid += 1
                     except ValidationError as e:
                         msg = str(e.message)
                         if len(msg) > 100:
