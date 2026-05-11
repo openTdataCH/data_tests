@@ -16,7 +16,7 @@ def run():
     check_gtfs(gtfs_2026_url, data_test)
     data_test.log_info("GTFS 2026 Schema check completed.")
     check_gtfs(gtfs_fahrplanentwurf_url, data_test)
-    data_test.log_info("GTFS Fahrplanentwurf check completed.")
+    data_test.log_info("GTFS Fahrplanentwurf Schema check completed.")
 
     return data_test
 
