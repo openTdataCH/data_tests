@@ -12,9 +12,11 @@ from utilities.json_utilities import load_json_file
 from datetime import datetime
 from utilities.ojp_utilities.easy_ojp20 import ojp10_triprequest
 from utilities.test_utilities import DataTest
+from utilities.file_and_path_utilities import get_path
 
 TEST_NAME = "ojp_fare_tests"
 CONFIG_FILE = f"tests/{TEST_NAME}/data/config.json"
+DUMP_FILE = f"tests/{TEST_NAME}/data/dumps/dump$$.txt"
 
 NS = {
     'siri': 'http://www.siri.org.uk/siri',
@@ -43,6 +45,17 @@ FARE_OPTIONS = {
 url_fare = "https://api.opentransportdata.swiss/ojpfare"
 
 timestamp = datetime.now().strftime("%Y-%m-%d")
+
+def _dump_to_file(object, **kwargs):
+    try:
+        s = datetime.now().isoformat()[:22].replace(":", "-")
+        for k, v in kwargs.items():
+            s += f"_{str(k)}_{str(v).replace(' ', '_')}"
+        with open(get_path(DUMP_FILE.replace('$$', s)), "w", encoding='utf-8-sig') as f:
+            f.write(str(object))
+    except:
+        # ignore - manifests itself in missing file.
+        pass
 
 def get_fare_body(trip_snippet, passenger_category="Adult", travel_class="first", age=25, entitlement_product=None, entitlement_product_name=None):
     entitlement_xml = ""
@@ -97,9 +110,11 @@ def run():
         return_as="xml",
         data_test=data_test
     )
+    conn_text = f"Zürich -> Chur"
 
     if status != 200 or isinstance(trip_xml, str) and trip_xml.startswith("<xml><ERROR>"):
         data_test.log_failure(f"Trip Request failed: {status}, response: {trip_xml}")
+        _dump_to_file(conn_text + "\n\n" + trip_xml, status=status, case="NOT200orERROR")
         return data_test
 
     trip_element = trip_xml.find(".//ojp:Trip", NS)
@@ -133,6 +148,7 @@ def run():
                     data_test.log_failure(f"{test_id} wrong price. Expected {expected_price}, got {actual_price} for {travel_class} class.")
             else:
                 data_test.log_failure(f"{test_id} No price found for {travel_class} class.")
+                _dump_to_file(fare_xml_body + "\n\n" + response_fare.text, case=f"{test_id}_NO_PRICE_FOUND")
     else:
         data_test.log_failure("No Trip element found")
     return data_test
