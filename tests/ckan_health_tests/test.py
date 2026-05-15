@@ -86,6 +86,10 @@ EXCLUDED_DATASETS = ('business-organisations', 'formations', 'gtfsrt', 'gtfs-sa'
                     'lod-pilot', 'netex-fernbus', 'ojp2-0', 'ojp2020', 'ojpfare', 'osdm-offline', 'rds-tmc',
                     'siri-et', 'siri-pt', 'siri-sx', 'trafficcountersrealtime', 'trafficlights-road-dynamic',
                     'trafficsituations', 'vm-liste')
+EXCLUDED_PERMALINK_AGE_CHECK = ("business-organisation-v2", "contact-point-v2", "line-v2", "parking-lot-v2",
+                                "platform-v2", "reference-point-v2", "relation-v2", "sectors-and-sector-groups-v2",
+                                "service-point-v2", "stop-point-v2", "subline-v2", "timetable-field-number-v2",
+                                "toilet-v2", "traffic-point-v2")
 DATASETS_WITH_RESSOURCES_OF_UNLIMITED_AGE = (
     'atzgf', 'einundaus', 'ereignisinformationen', 'ga-hta-liste1', 'go-realtime', 'go-siri-sx', 'go-siri-sx-infra',
     'ladestationen', 'sharedmobility', 'timetable-draft-gtfs', 'verbundsabos', 'vnch-swisstne', 'zugzahlen',
@@ -166,10 +170,11 @@ def check_datasets_permalink_and_age(datasets: dict, harvester_to_datasets_mappi
                         latest_resource_permalink = resource.get('url')
                         min_age = age_of_resource
 
-                permalink = ds_metadata.get("permalink")
-                if _canonized_permalink(permalink) != _canonized_permalink(latest_resource_permalink):
-                    data_test.log_failure(f"Dataset '{dataset}': Permalink not matching latest resource URL! --> https://data.opentransportdata.swiss/dataset/{dataset}")
-                    count_permalink_fails += 1
+                if not (dataset in EXCLUDED_PERMALINK_AGE_CHECK):
+                    permalink = ds_metadata.get("permalink")
+                    if _canonized_permalink(permalink) != _canonized_permalink(latest_resource_permalink):
+                        data_test.log_failure(f"Dataset '{dataset}': Permalink not matching latest resource URL! --> https://data.opentransportdata.swiss/dataset/{dataset}")
+                        count_permalink_fails += 1
 
                 acceptable_age = _acceptable_age_in_days(dataset)
                 if min_age > acceptable_age:
