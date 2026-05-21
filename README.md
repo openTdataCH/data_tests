@@ -1,6 +1,6 @@
-# data_tests - Automated Data Testing
+# data_tests - Automated Data Testing for opentransportdata.swiss
 
-This is a new project aimed at automated testing of datasets and APIs.
+This project is aimed at automated testing of datasets and APIs hosted at [opentransportdata.swiss](https://opentransportdata.swiss)
 
-Authors: Team of https://opentransportdata.swiss
+Authors: Team of [opentransportdata.swiss](https://opentransportdata.swiss)
 
