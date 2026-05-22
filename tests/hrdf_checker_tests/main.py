@@ -79,7 +79,6 @@ def persist_file_sizes(hrdf_parser: HRDFParser, data_test: DataTest, persister: 
                                      fahrplan_bezeichnung)
     data_test.log_info(f"Persisted file sizes to {FILE_SIZE_FILE_NAME}")
 
-
 def run(data_test: DataTest, variant: str, static_mode = False):
     """
     This method runs the hrdf checker
