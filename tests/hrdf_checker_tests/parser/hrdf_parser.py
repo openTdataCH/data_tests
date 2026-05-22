@@ -132,11 +132,11 @@ class HRDFParser:
     DICT_OF_EXPECTED_FILE_SIZES_IN_BYTES = {
         BAHNHOF_FILE_NAME: {
             MIN: 900_000,
-            MAX: 1_500_000
+            MAX: 2_000_000
         },
         FPLAN_FILE_NAME: {
             MIN: 500_000_000,
-            MAX: 1_750_000_000
+            MAX: 2_500_000_000
         },
         BFKOORD_WGS_FILE_NAME: {
             MIN: 1_500_000,
@@ -144,23 +144,23 @@ class HRDFParser:
         },
         RICHTUNG_FILE_NAME: {
             MIN: 100_000,
-            MAX: 200_000
+            MAX: 250_000
         },
         INFOTEXT_DE_FILE_NAME: {
             MIN: 10_000_000,
-            MAX: 50_000_000
+            MAX: 60_000_000
         },
         INFOTEXT_EN_FILE_NAME: {
             MIN: 10_000_000,
-            MAX: 50_000_000
+            MAX: 60_000_000
         },
         INFOTEXT_FR_FILE_NAME: {
             MIN: 10_000_000,
-            MAX: 50_000_000
+            MAX: 60_000_000
         },
         INFOTEXT_IT_FILE_NAME: {
             MIN: 10_000_000,
-            MAX: 50_000_000
+            MAX: 60_000_000
         },
         ECKDATEN_FILE_NAME: {
             MIN: 40,
