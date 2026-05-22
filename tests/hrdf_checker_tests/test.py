@@ -12,9 +12,9 @@ from tests.hrdf_checker_tests import main
 
 TEST_NAME = "hrdf_checker_tests"
 
-def run():
-    data_test = DataTest(name=TEST_NAME)
-    main.run(data_test)
+def run(variant: str = None) -> DataTest:
+    data_test = DataTest(name=f"{TEST_NAME}_{variant}")
+    main.run(data_test, variant=variant)
     # at the end, return the data_test object, it contains the logs and the counts (warnings, failures, etc.):
     return data_test
 

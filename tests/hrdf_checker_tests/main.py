@@ -1,4 +1,5 @@
 import os
+from datetime import date
 from enum import Enum
 
 from typing_extensions import Iterable, Sized
@@ -79,15 +80,15 @@ def persist_file_sizes(hrdf_parser: HRDFParser, data_test: DataTest, persister: 
     data_test.log_info(f"Persisted file sizes to {FILE_SIZE_FILE_NAME}")
 
 
-def run(data_test: DataTest, static_mode=False):
+def run(data_test: DataTest, variant: str, static_mode = False):
     """
     This method runs the hrdf checker
-    :argument static_mode: when true disables fetching and deletion of files to be checked, useful for debugging purposes, remember to set it to false before using it in production
     :argument data_test: the data test passed from the runner
+    :argument variant: which timetable year to process
+    :argument static_mode: when true disables fetching and deletion of files to be checked, useful for debugging purposes, remember to set it to false before using it in production
     """
-
-    """todo: change hardcoded urls below"""
-
+    if variant is None:
+        variant = str(date.today().year)
     base_path = os.path.split(__file__)[0]
     files_path = os.path.join(base_path, "hrdf_files")
     hrdf_file_name = "hrdf.zip"
@@ -95,12 +96,11 @@ def run(data_test: DataTest, static_mode=False):
     if not static_mode:
         downloader_object = Downloader(files_path, data_test)
         downloader_object.fetch_file(
-            "https://data.opentransportdata.swiss/dataset/timetable-54-2026-hrdf/permalink",
+            f"https://data.opentransportdata.swiss/dataset/timetable-54-{variant}-hrdf/permalink",
             hrdf_file_name, True)
         downloader_object.fetch_file(
-            "https://data.opentransportdata.swiss/dataset/service-points-full/permalink",
+            "https://data.opentransportdata.swiss/dataset/service-point-v2/resource_permalink/actual-date-swiss-service-point.csv",
             dienststellen_file_name, True)
-        downloader_object.extract_zip_to_same_file_name(dienststellen_file_name)
     else:
         data_test.log_warning(f"Static mode has been enabled, the plugin will not fetch any data")
     hrdf_parser_object = HRDFParser(os.path.join(files_path,
