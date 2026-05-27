@@ -60,7 +60,7 @@ def strip_quotes(value: str, quotechar: str) -> str:
 def load_csv_streaming_and_do_data_checks(url: str = None, stream = None, schema_config: dict = None,
                                           delimiter: str = ';', quotechar: str = '"',
                                           data_test: DataTest = None, filename: str = "CSV") -> DataTest:
-    """Load a CSV file at the given URL, using a stream-based approach (not loading in memory) and do some data checks on it."""
+    """Load a CSV file at the given URL, using a stream-based approach or loading in memory and do some data checks on it."""
     if data_test is None:
         data_test = DataTest(name="csv_schema_check")
 
