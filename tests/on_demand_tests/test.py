@@ -10,7 +10,7 @@ The run method requires no config at all (hence, no 'config' parameter).
 from tests.on_demand_tests.netex_utilities import check_netex
 from tests.on_demand_tests.hrdf_utilities import check_hrdf
 from utilities.test_utilities import DataTest
-from utilities.gtfs_utilities import check_gtfs
+from utilities.gtfs_utilities.gtfs_utilities import check_gtfs
 
 def run():
     data_test = DataTest(name="on_demand_test")

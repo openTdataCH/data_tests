@@ -1,0 +1,384 @@
+{
+  "gtfs_files": {
+    "agency.txt": {
+      "required_file": true,
+      "line_count_range": [1, 500],
+      "columns": {
+        "agency_id": { "required": false, "unique": true },
+        "agency_name": { "required": true },
+        "agency_url": { "required": true, "regex": "^https?://.+" },
+        "agency_timezone": { "required": true },
+        "agency_lang": { "required": false },
+        "agency_phone": { "required": false },
+        "agency_fare_url": { "required": false, "regex": "^https?://.+" },
+        "agency_email": { "required": false, "regex": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$" }
+      }
+    },
+    "calendar.txt": {
+      "required_file": true,
+      "columns": {
+        "service_id": { "required": true, "unique": true },
+        "monday": { "required": true, "enum": ["0", "1"] },
+        "tuesday": { "required": true, "enum": ["0", "1"] },
+        "wednesday": { "required": true, "enum": ["0", "1"] },
+        "thursday": { "required": true, "enum": ["0", "1"] },
+        "friday": { "required": true, "enum": ["0", "1"] },
+        "saturday": { "required": true, "enum": ["0", "1"] },
+        "sunday": { "required": true, "enum": ["0", "1"] },
+        "start_date": { "required": true, "regex": "^\\d{8}$" },
+        "end_date": { "required": true, "regex": "^\\d{8}$" }
+      }
+    },
+    "calendar_dates.txt": {
+      "required_file": true,
+      "columns": {
+        "service_id": { "required": true },
+        "date": { "required": true, "regex": "^\\d{8}$" },
+        "exception_type": { "required": true, "enum": ["1", "2"] }
+      }
+    },
+    "routes.txt": {
+      "required_file": true,
+      "columns": {
+        "route_id": { "required": true, "unique": true },
+        "agency_id": { "required": false },
+        "route_short_name": { "required": false },
+        "route_long_name": { "required": false },
+        "route_desc": { "required": false },
+        "route_type": { "required": true },
+        "route_url": { "required": false, "regex": "^https?://.+" },
+        "route_color": { "required": false, "regex": "^[0-9a-fA-F]{6}$" },
+        "route_text_color": { "required": false, "regex": "^[0-9a-fA-F]{6}$" },
+        "route_sort_order": { "required": false, "regex": "^\\d+$" },
+        "continuous_pickup": { "required": false, "enum": ["0", "1", "2", "3"] },
+        "continuous_drop_off": { "required": false, "enum": ["0", "1", "2", "3"] },
+        "network_id": { "required": false }
+      }
+    },
+    "stop_times.txt": {
+      "required_file": true,
+      "columns": {
+        "trip_id": { "required": true },
+        "arrival_time": { "required": false, "regex": "^(-?\\d+|\\d{2,3}):[0-5]\\d:[0-5]\\d$" },
+        "departure_time": { "required": false, "regex": "^(-?\\d+|\\d{2,3}):[0-5]\\d:[0-5]\\d$" },
+        "stop_id": { "required": false },
+        "stop_sequence": { "required": true, "regex": "^\\d+$" },
+        "stop_headsign": { "required": false },
+        "pickup_type": { "required": false, "enum": ["0", "1", "2", "3"] },
+        "drop_off_type": { "required": false, "enum": ["0", "1", "2", "3"] },
+        "continuous_pickup": { "required": false, "enum": ["0", "1", "2", "3"] },
+        "continuous_drop_off": { "required": false, "enum": ["0", "1", "2", "3"] },
+        "shape_dist_traveled": { "required": false, "regex": "^\\d+(\\.\\d+)?$" },
+        "timepoint": { "required": false, "enum": ["0", "1"] },
+        "location_group_id": { "required": false },
+        "location_id": { "required": false },
+        "start_pickup_drop_off_window": { "required": false, "regex": "^\\d{2}:\\d{2}:\\d{2}$" },
+        "end_pickup_drop_off_window": { "required": false, "regex": "^\\d{2}:\\d{2}:\\d{2}$" },
+        "pickup_booking_rule_id": { "required": false },
+        "drop_off_booking_rule_id": { "required": false }
+      }
+    },
+    "stops.txt": {
+      "required_file": true,
+      "columns": {
+        "stop_id": { "required": true, "unique": true },
+        "stop_code": { "required": false },
+        "stop_name": { "required": false },
+        "tts_stop_name": { "required": false },
+        "stop_desc": { "required": false },
+        "stop_lat": { "required": false, "regex": "^-?([0-8]?[0-9](\\.\\d+)?|90(\\.0+)?)$" },
+        "stop_lon": { "required": false, "regex": "^-?([1]?[0-7]?[0-9](\\.\\d+)?|180(\\.0+)?)$" },
+        "zone_id": { "required": false },
+        "stop_url": { "required": false, "regex": "^https?://.+" },
+        "location_type": { "required": false, "enum": ["0", "1", "2", "3", "4"] },
+        "parent_station": { "required": false },
+        "stop_timezone": { "required": false },
+        "wheelchair_boarding": { "required": false, "enum": ["0", "1", "2"] },
+        "level_id": { "required": false },
+        "platform_code": { "required": false },
+        "original_stop_id": { "required": false }
+      }
+    },
+    "trips.txt": {
+      "required_file": true,
+      "columns": {
+        "route_id": { "required": true },
+        "service_id": { "required": true },
+        "trip_id": { "required": true, "unique": true },
+        "trip_headsign": { "required": false },
+        "trip_short_name": { "required": false },
+        "direction_id": { "required": false, "enum": ["0", "1"] },
+        "block_id": { "required": false },
+        "shape_id": { "required": false },
+        "wheelchair_accessible": { "required": false, "enum": ["0", "1", "2"] },
+        "bikes_allowed": { "required": false, "enum": ["0", "1", "2"] },
+        "original_trip_id": { "required": false },
+        "hints": { "required": false }
+      }
+    },
+    "booking_rules.txt": {
+      "required_file": false,
+      "columns": {
+        "booking_rule_id": { "required": true, "unique": true },
+        "booking_type": { "required": true, "enum": ["0", "1", "2", "3"] },
+        "prior_notice_duration_min": { "required": false, "regex": "^\\d+$" },
+        "prior_notice_duration_max": { "required": false, "regex": "^\\d+$" },
+        "prior_notice_last_day": { "required": false, "regex": "^\\d+$" },
+        "prior_notice_last_time": { "required": false, "regex": "^\\d{2}:\\d{2}:\\d{2}$" },
+        "prior_notice_start_day": { "required": false, "regex": "^\\d+$" },
+        "prior_notice_start_time": { "required": false, "regex": "^\\d{2}:\\d{2}:\\d{2}$" },
+        "prior_notice_service_id": { "required": false },
+        "message": { "required": false },
+        "pickup_message": { "required": false },
+        "drop_off_message": { "required": false },
+        "phone_number": { "required": false },
+        "info_url": { "required": false, "regex": "^https?://.+" },
+        "booking_url": { "required": false, "regex": "^https?://.+" }
+      }
+    },
+    "booking_rules_additional_messages.txt": {
+      "required_file": false,
+      "columns": {
+        "booking_rule_id": { "required": true },
+        "message_id": { "required": true },
+        "message_type": { "required": true },
+        "message": { "required": false }
+      }
+    },
+    "feed_info.txt": {
+      "required_file": false,
+      "columns": {
+        "feed_publisher_name": { "required": true },
+        "feed_publisher_url": { "required": true, "regex": "^https?://.+" },
+        "feed_lang": { "required": true },
+        "default_lang": { "required": false },
+        "feed_start_date": { "required": false, "regex": "^\\d{8}$" },
+        "feed_end_date": { "required": false, "regex": "^\\d{8}$" },
+        "feed_version": { "required": false },
+        "feed_contact_email": { "required": false, "regex": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$" },
+        "feed_contact_url": { "required": false, "regex": "^https?://.+" }
+      }
+    },
+    "frequencies.txt": {
+      "required_file": false,
+      "columns": {
+        "trip_id": { "required": true },
+        "start_time": { "required": true, "regex": "^\\d{2}:\\d{2}:\\d{2}$" },
+        "end_time": { "required": true, "regex": "^\\d{2}:\\d{2}:\\d{2}$" },
+        "headway_secs": { "required": true, "regex": "^\\d+$" },
+        "exact_times": { "required": false, "enum": ["0", "1"] }
+      }
+    },
+    "location_group_stops.txt": {
+      "required_file": false,
+      "columns": {
+        "location_group_id": { "required": true },
+        "stop_id": { "required": true }
+      }
+    },
+    "location_groups.txt": {
+      "required_file": false,
+      "columns": {
+        "location_group_id": { "required": true, "unique": true },
+        "location_group_name": { "required": false }
+      }
+    },
+    "locations.geojson": {
+      "required_file": false,
+      "columns": {
+        "type": { "required": true, "enum": ["FeatureCollection"] },
+        "features": { "required": true }
+      }
+    },
+    "transfers.txt": {
+      "required_file": false,
+      "columns": {
+        "from_stop_id": { "required": false },
+        "to_stop_id": { "required": false },
+        "from_route_id": { "required": false },
+        "to_route_id": { "required": false },
+        "from_trip_id": { "required": false },
+        "to_trip_id": { "required": false },
+        "transfer_type": { "required": true, "enum": ["0", "1", "2", "3", "4", "5"] },
+        "min_transfer_time": { "required": false, "regex": "^\\d+$" }
+      }
+    },
+    "fare_attributes.txt": {
+      "required_file": false,
+      "columns": {
+        "fare_id": { "required": true, "unique": true },
+        "price": { "required": true, "regex": "^\\d+(\\.\\d+)?$" },
+        "currency_type": { "required": true },
+        "payment_method": { "required": true, "enum": ["0", "1"] },
+        "transfers": { "required": true, "enum": ["0", "1", "2", ""] },
+        "agency_id": { "required": false },
+        "transfer_duration": { "required": false, "regex": "^\\d+$" }
+      }
+    },
+    "fare_rules.txt": {
+      "required_file": false,
+      "columns": {
+        "fare_id": { "required": true },
+        "route_id": { "required": false },
+        "origin_id": { "required": false },
+        "destination_id": { "required": false },
+        "contains_id": { "required": false }
+      }
+    },
+    "timeframes.txt": {
+      "required_file": false,
+      "columns": {
+        "timeframe_id": { "required": true, "unique": true },
+        "start_time": { "required": false, "regex": "^\\d{2}:\\d{2}:\\d{2}$" },
+        "end_time": { "required": false, "regex": "^\\d{2}:\\d{2}:\\d{2}$" },
+        "service_id": { "required": true }
+      }
+    },
+    "rider_categories.txt": {
+      "required_file": false,
+      "columns": {
+        "rider_category_id": { "required": true },
+        "rider_category_name": { "required": true },
+        "is_default_fare_category": { "required": true }
+      }
+    },
+    "fare_media.txt": {
+      "required_file": false,
+      "columns": {
+        "fare_media_id": { "required": true, "unique": true },
+        "fare_media_name": { "required": true },
+        "fare_media_type": { "required": true, "enum": ["0", "1", "2", "3", "4"] }
+      }
+    },
+    "fare_products.txt": {
+      "required_file": false,
+      "columns": {
+        "fare_product_id": { "required": true, "unique": true },
+        "fare_product_name": { "required": true },
+        "amount": { "required": true, "regex": "^\\d+(\\.\\d+)?$" },
+        "currency": { "required": true }
+      }
+    },
+    "fare_leg_rules.txt": {
+      "required_file": false,
+      "columns": {
+        "leg_group_id": { "required": false },
+        "from_area_id": { "required": false },
+        "to_area_id": { "required": false },
+        "from_network_id": { "required": false },
+        "to_network_id": { "required": false },
+        "fare_product_id": { "required": true }
+      }
+    },
+    "fare_leg_join_rules.txt": {
+      "required_file": false,
+      "columns": {
+        "from_network_id": { "required": true },
+        "to_network_id": { "required": true }
+      }
+    },
+    "fare_transfer_rules.txt": {
+      "required_file": false,
+      "columns": {
+        "from_leg_group_id": { "required": false },
+        "to_leg_group_id": { "required": false },
+        "transfer_count": { "required": false },
+        "duration_limit": { "required": false, "regex": "^\\d+$" },
+        "duration_type": { "required": false, "enum": ["0", "1", "2", "3"] },
+        "fare_transfer_type": { "required": true, "enum": ["0", "1", "2"] },
+        "fare_product_id": { "required": false }
+      }
+    },
+    "areas.txt": {
+      "required_file": false,
+      "columns": {
+        "area_id": { "required": true, "unique": true },
+        "area_name": { "required": false }
+      }
+    },
+    "stop_areas.txt": {
+      "required_file": false,
+      "columns": {
+        "area_id": { "required": true },
+        "stop_id": { "required": true }
+      }
+    },
+    "networks.txt": {
+      "required_file": false,
+      "columns": {
+        "network_id": { "required": true, "unique": true },
+        "network_name": { "required": false }
+      }
+    },
+    "route_networks.txt": {
+      "required_file": false,
+      "columns": {
+        "route_id": { "required": true },
+        "network_id": { "required": true }
+      }
+    },
+    "shapes.txt": {
+      "required_file": false,
+      "columns": {
+        "shape_id": { "required": true },
+        "shape_pt_lat": { "required": true, "regex": "^-?([0-8]?[0-9](\\.\\d+)?|90(\\.0+)?)$" },
+        "shape_pt_lon": { "required": true, "regex": "^-?([1]?[0-7]?[0-9](\\.\\d+)?|180(\\.0+)?)$" },
+        "shape_pt_sequence": { "required": true, "regex": "^\\d+$" },
+        "shape_dist_traveled": { "required": false, "regex": "^\\d+(\\.\\d+)?$" }
+      }
+    },
+    "pathways.txt": {
+      "required_file": false,
+      "columns": {
+        "pathway_id": { "required": true, "unique": true },
+        "from_stop_id": { "required": true },
+        "to_stop_id": { "required": true },
+        "pathway_mode": { "required": true, "enum": ["1", "2", "3", "4", "5", "6", "7"] },
+        "is_bidirectional": { "required": true, "enum": ["0", "1"] },
+        "length": { "required": false, "regex": "^\\d+(\\.\\d+)?$" },
+        "traversal_time": { "required": false, "regex": "^\\d+$" },
+        "stair_count": { "required": false, "regex": "^-?\\d+$" },
+        "max_slope": { "required": false, "regex": "^-?\\d+(\\.\\d+)?$" },
+        "min_width": { "required": false, "regex": "^\\d+(\\.\\d+)?$" },
+        "signposted_as": { "required": false },
+        "reversed_signposted_as": { "required": false }
+      }
+    },
+    "levels.txt": {
+      "required_file": false,
+      "columns": {
+        "level_id": { "required": true, "unique": true },
+        "level_index": { "required": true, "regex": "^-?\\d+(\\.\\d+)?$" },
+        "level_name": { "required": false }
+      }
+    },
+    "translations.txt": {
+      "required_file": false,
+      "columns": {
+        "table_name": { "required": true, "enum": ["agency", "stops", "routes", "trips", "stop_times", "feed_info", "pathways", "levels", "attributions"] },
+        "field_name": { "required": true },
+        "language": { "required": true },
+        "translation": { "required": true },
+        "record_id": { "required": false },
+        "record_sub_id": { "required": false },
+        "field_value": { "required": false }
+      }
+    },
+    "attributions.txt": {
+      "required_file": false,
+      "columns": {
+        "attribution_id": { "required": false, "unique": true },
+        "agency_id": { "required": false },
+        "route_id": { "required": false },
+        "trip_id": { "required": false },
+        "organization_name": { "required": true },
+        "is_producer": { "required": false, "enum": ["0", "1"] },
+        "is_operator": { "required": false, "enum": ["0", "1"] },
+        "is_authority": { "required": false, "enum": ["0", "1"] },
+        "attribution_url": { "required": false, "regex": "^https?://.+" },
+        "attribution_email": { "required": false, "regex": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$" },
+        "attribution_phone": { "required": false }
+      }
+    }
+  }
+}
