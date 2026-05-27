@@ -76,7 +76,7 @@ def load_csv_streaming_and_do_data_checks(url: str = None, stream = None, schema
         with https_lines_iterator(url, encoding="utf-8", skip_empty=True) as lines:
             csv_reader = csv.reader(lines, delimiter=delimiter, quotechar=quotechar)
             i_line = _execute_validation(csv_reader, column_rules, seen_values, data_test, filename)
-            data_test.log_info(f"url = {filename}")
+            data_test.log_info(f"filename = {filename} from {url} checked")
     else:
         data_test.log_failure("Neither URL nor Stream handed over for validation.")
         return data_test
