@@ -91,6 +91,7 @@ EXCLUDED_PERMALINK_AGE_CHECK = ("business-organisation-v2", "contact-point-v2", 
                                 "service-point-v2", "stop-point-v2", "subline-v2", "timetable-field-number-v2",
                                 "toilet-v2", "traffic-point-v2")
 DATASETS_WITH_RESSOURCES_OF_UNLIMITED_AGE = (
+    'timetable-54-2027-hrdf-autoverlad', 'timetable-54-2027-hrdf', 'timetable-2027-gtfs2020', 'timetablenetex_2027', # temporarily set, until mid juin 2026
     'atzgf', 'einundaus', 'ereignisinformationen', 'ga-hta-liste1', 'go-realtime', 'go-siri-sx', 'go-siri-sx-infra',
     'ladestationen', 'sharedmobility', 'timetable-draft-gtfs', 'verbundsabos', 'vnch-swisstne', 'zugzahlen',
     'netex-fernbus', 'timetable-2024-gtfs2020', 'timetable-2025-gtfs2020', 'list-sjyid',
