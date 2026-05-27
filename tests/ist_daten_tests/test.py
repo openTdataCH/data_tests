@@ -8,10 +8,12 @@ The test does these checks:
 
 The run method requires no config at all (hence, no 'config' parameter).
 """
+import json
 
 from utilities.ckan_utilities import load_ckan_package
 from utilities.csv_utilities import load_csv_streaming_and_do_data_checks
 from utilities.datetime_utilities import age_in_days
+from utilities.file_and_path_utilities import get_path
 from utilities.test_utilities import DataTest
 
 CSV_HEADER = "['BETRIEBSTAG', 'FAHRT_BEZEICHNER', 'BETREIBER_ID', 'BETREIBER_ABK', 'BETREIBER_NAME', 'PRODUKT_ID', 'LINIEN_ID', 'LINIEN_TEXT', 'UMLAUF_ID', 'VERKEHRSMITTEL_TEXT', 'ZUSATZFAHRT_TF', 'FAELLT_AUS_TF', 'BPUIC', 'HALTESTELLEN_NAME', 'ANKUNFTSZEIT', 'AN_PROGNOSE', 'AN_PROGNOSE_STATUS', 'ABFAHRTSZEIT', 'AB_PROGNOSE', 'AB_PROGNOSE_STATUS', 'DURCHFAHRT_TF', 'SLOID']"
@@ -34,14 +36,15 @@ def run():
         data_test.log_failure(f"Permalink invalid, no matching resource (file) found.")
 
     # dataset checks:
-    COLUMN_HEADERS = "BETRIEBSTAG;FAHRT_BEZEICHNER;BETREIBER_ID;BETREIBER_ABK;BETREIBER_NAME;PRODUKT_ID;LINIEN_ID;LINIEN_TEXT;UMLAUF_ID;VERKEHRSMITTEL_TEXT;ZUSATZFAHRT_TF;FAELLT_AUS_TF;BPUIC;HALTESTELLEN_NAME;ANKUNFTSZEIT;AN_PROGNOSE;AN_PROGNOSE_STATUS;ABFAHRTSZEIT;AB_PROGNOSE;AB_PROGNOSE_STATUS;DURCHFAHRT_TF;SLOID".split(";")
-    COLUMN_RE_MATCHES = [
-        r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.20[234](\d{1})$"
-    ]
-    data_test = load_csv_streaming_and_do_data_checks(url="https://data.opentransportdata.swiss/dataset/ist-daten-v2/permalink",
-                                                      column_headers=COLUMN_HEADERS, column_re_matches=COLUMN_RE_MATCHES,
-                                                      line_count_range=ROW_RANGE,
-                                                      data_test=data_test)
+    schema_path = get_path("tests/ist_daten_tests/ist_daten_schema_config.json")
+    with open(schema_path, "r", encoding="utf-8") as schema_file:
+        master_config = json.load(schema_file)
+    ist_daten_schema_config = master_config.get("ist_daten_files", None)
+    for filename, file_schema in ist_daten_schema_config.items():
+        data_test = load_csv_streaming_and_do_data_checks(url="https://data.opentransportdata.swiss/dataset/ist-daten-v2/permalink",
+                                                          schema_config=file_schema, delimiter=";",
+                                                          filename=filename,
+                                                          data_test=data_test)
 
     return data_test
 

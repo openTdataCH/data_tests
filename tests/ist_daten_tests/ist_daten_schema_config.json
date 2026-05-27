@@ -1,0 +1,34 @@
+{
+  "ist_daten_files": {
+    "fahrplan_ist_daten.txt": {
+      "required_file": true,
+      "columns": {
+        "BETRIEBSTAG": {
+          "required": true,
+          "regex": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.20[234](\\d{1})$"
+        },
+        "FAHRT_BEZEICHNER": { "required": true },
+        "BETREIBER_ID": { "required": true },
+        "BETREIBER_ABK": { "required": false },
+        "BETREIBER_NAME": { "required": false },
+        "PRODUKT_ID": { "required": false },
+        "LINIEN_ID": { "required": false },
+        "LINIEN_TEXT": { "required": false },
+        "UMLAUF_ID": { "required": false },
+        "VERKEHRSMITTEL_TEXT": { "required": false },
+        "ZUSATZFAHRT_TF": { "required": true, "enum": ["true", "false", "T", "F", "1", "0"] },
+        "FAELLT_AUS_TF": { "required": true, "enum": ["true", "false", "T", "F", "1", "0"] },
+        "BPUIC": { "required": true },
+        "HALTESTELLEN_NAME": { "required": false },
+        "ANKUNFTSZEIT": { "required": false },
+        "AN_PROGNOSE": { "required": false },
+        "AN_PROGNOSE_STATUS": { "required": false },
+        "ABFAHRTSZEIT": { "required": false },
+        "AB_PROGNOSE": { "required": false },
+        "AB_PROGNOSE_STATUS": { "required": false },
+        "DURCHFAHRT_TF": { "required": true, "enum": ["true", "false", "T", "F", "1", "0"] },
+        "SLOID": { "required": false }
+      }
+    }
+  }
+}

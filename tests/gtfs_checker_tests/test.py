@@ -4,7 +4,7 @@ The run method requires no config at all (hence, no 'config' parameter).
 """
 
 from utilities.test_utilities import DataTest
-from utilities.gtfs_utilities import check_gtfs
+from utilities.gtfs_utilities.gtfs_utilities import check_gtfs
 
 
 def run():
