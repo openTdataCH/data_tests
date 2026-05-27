@@ -57,60 +57,57 @@ def strip_quotes(value: str, quotechar: str) -> str:
     return value[1:-1] if value.startswith(quotechar) and value.endswith(quotechar) else value
 
 
-def load_csv_streaming_and_do_data_checks(url: str = None, stream = None, schema_config: dict = None,
+def load_csv_streaming_and_do_data_checks(url: str, column_headers: list = None, column_re_matches: list = None,
                                           delimiter: str = ';', quotechar: str = '"',
-                                          data_test: DataTest = None, filename: str = "CSV") -> DataTest:
-    """Load a CSV file at the given URL, using a stream-based approach (not loading in memory) and do some data checks on it."""
+                                          data_test: DataTest = None, line_count_range: tuple = None,
+                                          skip_logging_after = 100) -> DataTest:
+    """Load a CSV file at the given URL, using a stream-based approach (not loading in memory) and do some data checks on it.
+
+    :param url: - URL from which to load the CSV
+    :param column_headers: - list of header names which must be present in the CSV's first row.
+    :param column_re_matches: - regexp expressions that the given column must match
+    :param delimiter: - the CSV delimiter to use (';' by default)
+    :param quotechar: - the CSV quotechar to use ('"' by default)
+    :param data_test: - a DataTest object where to report test findings.
+    :param line_count_range: - range (min, max) of lines the CSV should have.
+    :param skip_logging_after: - skip collecting log messages after this number of log messages.
+    :return: data_test - the DataTest object containing the test findings.
+    """
     if data_test is None:
-        data_test = DataTest(name="csv_schema_check")
+        data_test = DataTest(name="load_csv_streaming_and_do_data_checks", skip_logging_after=skip_logging_after)
 
-    column_rules = schema_config.get("columns", {}) if schema_config else {}
-    seen_values = {col: set() for col, rules in column_rules.items() if rules.get("unique")}
-    i_line = 0
+    if column_headers is not None:
+        column_headers = [strip_quotes(v, quotechar) for v in column_headers]
+    with https_lines_iterator(url, encoding="utf-8", skip_empty=True) as lines:
+        for i_line, line in enumerate(lines):
+            fields_in_row = [strip_quotes(v, quotechar) for v in line.split(delimiter)]
+            if column_headers is not None:
+                if len(column_headers) != len(fields_in_row):
+                    data_test.log_failure(f"Row {i} has cell count {len(fields_in_row)} not matching {len(column_headers)} column headers!")
+            if i_line == 0:
+                if column_headers is not None:
+                    non_matches = ""
+                    for i_col, column_header in enumerate(column_headers):
+                        if column_header != fields_in_row[i_col]:
+                            non_matches += f"col. {i_col}: {column_header}!={fields_in_row[i_col]}, "
+                    if non_matches != "":
+                        data_test.log_failure(f"Column headers not as expected: {non_matches[:-2]}!")
+            else:
+                if column_re_matches is not None:
+                    non_matches = ""
+                    for i_col, column_re_match in enumerate(column_re_matches):
+                        if (i_col < len(fields_in_row)) and not re.match(column_re_match, fields_in_row[i_col]):
+                            non_matches += f"col. {i_col}: {fields_in_row[i_col]} not matching '{column_re_match}', "
+                    if non_matches != "":
+                        data_test.log_failure(f"Row fields regex patterns not as expected: {non_matches[:-2]}!")
 
-    if stream is not None:
-        csv_reader = csv.reader(stream, delimiter=delimiter, quotechar=quotechar)
-        i_line = _execute_validation(csv_reader, column_rules, seen_values, data_test, filename)
-        data_test.log_info(f"filename = {filename}")
-    elif url is not None:
-        with https_lines_iterator(url, encoding="utf-8", skip_empty=True) as lines:
-            csv_reader = csv.reader(lines, delimiter=delimiter, quotechar=quotechar)
-            i_line = _execute_validation(csv_reader, column_rules, seen_values, data_test, filename)
-            data_test.log_info(f"url = {filename}")
-    else:
-        data_test.log_failure("Neither URL nor Stream handed over for validation.")
-        return data_test
+    if line_count_range is not None:
+        if not(line_count_range[0] <= i_line <= line_count_range[1]):
+            data_test.log_failure(f"CSV has {i_line} lines, not in range {line_count_range}!")
 
-    if schema_config and "line_count_range" in schema_config:
-        min_lines, max_lines = schema_config["line_count_range"]
-        if not (min_lines <= i_line <= max_lines):
-            data_test.log_failure(f"{filename} has a total of {i_line} lines. Expected range: [{min_lines}, {max_lines}].")
+    data_test.log_info(f"Loaded and checked {i_line} lines / {len(column_headers)} columns of CSV data.")
 
     return data_test
-
-def _execute_validation(csv_reader, column_rules, seen_values, data_test, filename) -> int:
-    """Internal support function for iteration through columns and rows"""
-    i_line = 0
-    try:
-        headers = [h.strip() for h in next(csv_reader)]
-        i_line += 1
-        if column_rules:
-            validate_headers(headers, column_rules, data_test, filename)
-    except StopIteration:
-        data_test.log_failure(f"{filename} is completely empty (no Header line).")
-        return i_line
-
-    for row in csv_reader:
-        i_line += 1
-        if len(row) != len(headers):
-            data_test.log_failure(f"{filename}, Line {i_line} has {len(row)} entries, expected were {len(headers)}.")
-            continue
-
-        if column_rules:
-            row_dict = dict(zip(headers, row))
-            validate_row(row_dict, i_line, column_rules, seen_values, data_test, filename)
-
-    return i_line
 
 
 
@@ -153,55 +150,3 @@ def https_lines_iterator(url: str, *, timeout: tuple[float, float] = (5.0, 30.0)
                     yield line.decode(encoding, errors)  # str
 
         yield _gen()
-
-
-def validate_headers(actual_headers: list[str], column_rules: dict, data_test: DataTest, filename: str = "CSV"):
-    """Checks the CSV header against the expected columns from the config."""
-    if not column_rules:
-        return
-
-    expected_headers = list(column_rules.keys())
-
-    missing_required = []
-    for expected_h, rules in column_rules.items():
-        if expected_h not in actual_headers:
-            if rules.get("required", False):
-                missing_required.append(expected_h)
-
-    if missing_required:
-        data_test.log_failure(f"{filename}: Missing mandatory columns: {missing_required}")
-
-    unexpected = [h for h in actual_headers if h not in expected_headers]
-    if unexpected:
-        data_test.log_failure(f"{filename}: Unexpected (new) column found: {unexpected}")
-
-
-def validate_row(row_dict: dict, row_num: int, column_rules: dict, seen_values: dict, data_test: DataTest, filename: str = "CSV"):
-    """Validates the content of a single data row."""
-    for col_name, rules in column_rules.items():
-        if col_name not in row_dict:
-            continue
-        value = row_dict.get(col_name)
-
-        # 1. Check: Required / empty values
-        if value is None or value.strip() == "":
-            if rules.get("required", False):
-                data_test.log_failure(f"{filename}, Row {row_num}: Column '{col_name}' is empty, but a mandatory field.")
-            continue
-
-        # 2. Check: Regex matching
-        if "regex" in rules:
-            if not re.match(rules["regex"], value):
-                data_test.log_failure(f"{filename}, Row {row_num}: '{value}' in Column '{col_name}' does not match Regex '{rules['regex']}'.")
-
-        # 3. Check: Allowed Values (Enum)
-        if "enum" in rules:
-            if value not in rules["enum"]:
-                data_test.log_failure(f"{filename}, Row {row_num}: '{value}' in Column '{col_name}' is not an allowed value from: {rules['enum']}.")
-
-        # 4. Check: Uniqueness (Unique)
-        if rules.get("unique", False):
-            if value in seen_values[col_name]:
-                data_test.log_failure(f"{filename}, Row {row_num}: Duplicate found in Unique column '{col_name}': '{value}'.")
-            else:
-                seen_values[col_name].add(value)
