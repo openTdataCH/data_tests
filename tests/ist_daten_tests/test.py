@@ -39,7 +39,7 @@ def run():
     schema_path = get_path("tests/ist_daten_tests/ist_daten_schema_config.json")
     with open(schema_path, "r", encoding="utf-8") as schema_file:
         master_config = json.load(schema_file)
-    ist_daten_schema_config = master_config.get("ist_daten_files", None)
+    ist_daten_schema_config = master_config.get("csv_schema_spec", None)
     for filename, file_schema in ist_daten_schema_config.items():
         data_test = load_csv_streaming_and_do_data_checks(url="https://data.opentransportdata.swiss/dataset/ist-daten-v2/permalink",
                                                           schema_config=file_schema, delimiter=";",

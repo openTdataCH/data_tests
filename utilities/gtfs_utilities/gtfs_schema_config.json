@@ -1,5 +1,5 @@
 {
-  "gtfs_files": {
+  "csv_schema_spec": {
     "agency.txt": {
       "required_file": true,
       "line_count_range": [1, 500],

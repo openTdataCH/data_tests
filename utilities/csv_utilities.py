@@ -60,7 +60,7 @@ def strip_quotes(value: str, quotechar: str) -> str:
 def load_csv_streaming_and_do_data_checks(url: str = None, stream = None, schema_config: dict = None,
                                           delimiter: str = ';', quotechar: str = '"',
                                           data_test: DataTest = None, filename: str = "CSV") -> DataTest:
-    """Load a CSV file at the given URL, using a stream-based approach (not loading in memory) and do some data checks on it."""
+    """Load a CSV file at the given URL, using a stream-based approach or loading in memory and do some data checks on it."""
     if data_test is None:
         data_test = DataTest(name="csv_schema_check")
 
@@ -76,7 +76,7 @@ def load_csv_streaming_and_do_data_checks(url: str = None, stream = None, schema
         with https_lines_iterator(url, encoding="utf-8", skip_empty=True) as lines:
             csv_reader = csv.reader(lines, delimiter=delimiter, quotechar=quotechar)
             i_line = _execute_validation(csv_reader, column_rules, seen_values, data_test, filename)
-            data_test.log_info(f"url = {filename}")
+            data_test.log_info(f"filename = {filename} from {url} checked")
     else:
         data_test.log_failure("Neither URL nor Stream handed over for validation.")
         return data_test

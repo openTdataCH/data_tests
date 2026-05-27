@@ -1,5 +1,5 @@
 {
-  "ist_daten_files": {
+  "csv_schema_spec": {
     "fahrplan_ist_daten.txt": {
       "required_file": true,
       "columns": {

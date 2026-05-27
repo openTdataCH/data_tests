@@ -21,7 +21,7 @@ def check_gtfs(url: str, data_test=None):
         with open(schema_path, "r", encoding="utf-8") as schema_file:
             master_config = json.load(schema_file)
 
-        gtfs_files_config = master_config.get("gtfs_files", {})
+        gtfs_files_config = master_config.get("csv_schema_spec", {})
 
         response = requests.get(url, headers=headers, timeout=30)
         response.raise_for_status()
