@@ -26,7 +26,7 @@ ALPHA = 0.2  # alpha factor for the Exponential Moving Average (EMA) of the size
 
 
 def run() -> dict:
-    data_test = DataTest(name="atlas_v2_test")
+    data_test = DataTest(name="atlas_v2_tests")
     ref_sizes = load_json_file(REF_SIZES_FILE)
     sizes = defaultdict(lambda : {})
     sucesses = ""

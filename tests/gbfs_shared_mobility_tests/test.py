@@ -86,7 +86,7 @@ def process_feed(feed_url, config_type, data_test, token):
     return 1, size
 
 def run() -> DataTest:
-    data_test = DataTest(name="gbfs_shared_mobility_test")
+    data_test = DataTest(name="gbfs_shared_mobility_tests")
     MY_TOKEN = "opendata@sbb.ch"
     successful_tests = 0
     loaded_bytes = 0

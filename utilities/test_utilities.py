@@ -7,7 +7,7 @@ Includes the definition of the DataTest class, which serves to handle a test wit
 import pytz
 from datetime import datetime as dt
 
-from utilities.template_utilities import Template
+from jinja2 import Environment, FileSystemLoader
 
 
 def now_iso8601():
@@ -26,6 +26,7 @@ def display_report_from_json(json_data: dict):
         s += f"    {log}\n"
     return s
 
+
 def _augment_html_rendering(payload: str) -> str:
     payload.replace("\\n", "\n")
     payload = payload.replace("\n", "<br>\n")
@@ -38,13 +39,15 @@ def _augment_html_rendering(payload: str) -> str:
 
 def html_report_from_json(json_data: dict):
     logs = json_data.get("logs")
-    tr = Template("test_report_template")
-    if len(logs) > 0:
-        tr.replace("timestamp", logs[0:19])
+    env = Environment(loader=FileSystemLoader('templates'))
+    body = env.get_template('test_report_template.html')
+    params = {
+        "timestamp": logs[0:19] if len(logs) > 0 else '',
+        "logs": _augment_html_rendering(logs)
+    }
     for k in "name", "description", "exceptions", "n_exceptions", "n_failures", "n_warnings":
-        tr.replace(k, json_data.get(k))
-    tr.replace("logs", _augment_html_rendering(logs))
-    return str(tr)
+        params[k] = json_data.get(k)
+    return body.render(params)
 
 
 class DataTest():

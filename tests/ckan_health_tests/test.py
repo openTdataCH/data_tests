@@ -189,7 +189,7 @@ def check_datasets_permalink_and_age(datasets: dict, harvester_to_datasets_mappi
 
 
 def run(config: dict = None):
-    data_test = DataTest(name="ckan_health_test")
+    data_test = DataTest(name="ckan_health_tests")
     packages, data_test = load_ckan_package_list(data_test)
 
     harvesters = [h for h in packages if 'harvester' in h]

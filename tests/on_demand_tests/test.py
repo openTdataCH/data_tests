@@ -13,7 +13,7 @@ from utilities.test_utilities import DataTest
 from utilities.gtfs_utilities.gtfs_utilities import check_gtfs
 
 def run():
-    data_test = DataTest(name="on_demand_test")
+    data_test = DataTest(name="on_demand_tests")
 
     gtfs_url = "https://data.opentransportdata.swiss/dataset/gtfsflex/permalink"
     netex_url = "https://data.opentransportdata.swiss/dataset/netex_tt_odv/permalink"

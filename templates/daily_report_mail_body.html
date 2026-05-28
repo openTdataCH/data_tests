@@ -2,15 +2,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{subject}}</title>
+    <title>{{ subject }}</title>
 </head>
 <body>
-<h1 style="color: blue;">{{subject}}</h1>
+<h1 style="color: blue;">{{ subject }}</h1>
 <p>This mail is delivered daily to all team members in alert group 'skiplus_support'.</p>
-<p><b><a href="https://tools.odpch.ch/data_tests/data_tests_dashboard.html">data_tests</a></b> had these exceptions, failures and/or warnings in the last {{THRESHOLD_HOURS}} hours:</p>
+<p><b><a href="{{ dashboard_url }}">data_tests</a></b> had these exceptions, failures and/or warnings in the last {{ THRESHOLD_HOURS }} hours:</p>
 <hr>
 <p>
-{{payload}}
+{{ payload }}
 </p>
 </body>
 </html>

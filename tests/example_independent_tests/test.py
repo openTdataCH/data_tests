@@ -14,7 +14,7 @@ import requests
 import csv
 
 def run():
-    test_report = {'name': 'example_independent_test', 'n_warnings': 0, 'n_failures': 0, 'n_exceptions': 0, 'exceptions': [], "logs": ""}
+    test_report = {'name': 'example_independent_tests', 'n_warnings': 0, 'n_failures': 0, 'n_exceptions': 0, 'exceptions': [], "logs": ""}
 
     response = requests.get("https://data.opentransportdata.swiss/dataset/atzgf/resource_permalink/gf-datei-2025.csv")
 

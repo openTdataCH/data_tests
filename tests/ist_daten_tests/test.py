@@ -22,7 +22,7 @@ AGE_IN_DAYS_THRESHOLD = 1.01
 
 
 def run():
-    data_test = DataTest(name="ist_daten_test", skip_logging_after=100)
+    data_test = DataTest(name="ist_daten_tests", skip_logging_after=100)
 
     # CKAN metadata checks:
     meta_data, size, data_test = load_ckan_package(f"ist-daten-v2", data_test)
