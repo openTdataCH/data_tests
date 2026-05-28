@@ -8,7 +8,7 @@ from utilities.gtfs_utilities.gtfs_utilities import check_gtfs
 
 
 def run():
-    data_test = DataTest(name="gtfs_checker_test")
+    data_test = DataTest(name="gtfs_checker_tests")
 
     gtfs_2026_url = "https://data.opentransportdata.swiss/dataset/timetable-2026-gtfs2020/permalink"
     gtfs_fahrplanentwurf_url = "https://data.opentransportdata.swiss/dataset/timetable-draft-gtfs/permalink"

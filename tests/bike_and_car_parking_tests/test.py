@@ -13,7 +13,7 @@ from utilities.json_utilities import load_json
 
 
 def run() -> dict:
-    data_test = DataTest(name="bike_and_car_parking_test")
+    data_test = DataTest(name="bike_and_car_parking_tests")
     data, size, data_test = load_json("https://data.opentransportdata.swiss/dataset/bike-and-car-parking/permalink", data_test=data_test)
 
     if not data_test.test(condition=data.get("features") is not None, if_false_log_failure="JSON response has no 'features' key!"):

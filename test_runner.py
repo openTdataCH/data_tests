@@ -19,10 +19,10 @@ import importlib
 import inspect
 import json
 import logging
+from jinja2 import Environment, FileSystemLoader
 
 from configuration import get_prop, CONFIG
 from utilities.mail_utilities import send_mail, recipients_that_are_now_is_in_allowed_time_window
-from utilities.template_utilities import Template
 from utilities.test_utilities import DataTest, html_report_from_json
 
 LOG_FILE = "data/logs/test_runner.log"
@@ -88,18 +88,22 @@ def has_exceptions_or_failures(test_report: dict) -> bool:
     return False
 
 
-
 def if_errors_send_alert_mail(name_and_variant: str, alert_group: str, test_report: dict):
     if has_exceptions_or_failures(test_report):
         recipients = get_prop(alert_group)
         allowed_recipients = recipients_that_are_now_is_in_allowed_time_window(get_prop("test_runner_alerts_allowed_times"), recipients)
         if allowed_recipients:
             subject = f"""data_tests: Test '{name_and_variant}' has Exceptions or Failures"""
-            body = Template("test_runner_mail_body.html")
-            body.replace("alert_group", alert_group)
-            body.replace("subject", subject).replace("name", name_and_variant)
-            body.append("payload", html_report_from_json(test_report))
-            return_code, message = send_mail(subject, allowed_recipients, body)
+            env = Environment(loader=FileSystemLoader('templates'))
+            body = env.get_template('test_runner_mail_body.html')
+            params = {
+                "alert_group": alert_group,
+                "subject": subject,
+                "dashboard_url": CONFIG['dashboard_url'],
+                "name": name_and_variant,
+                "payload": html_report_from_json(test_report)
+            }
+            return_code, message = send_mail(subject, allowed_recipients, body.render(params))
             if return_code != 0:
                 raise ConnectionError(f"send_mail() has an error: return_code={return_code}, message={message}!")
 

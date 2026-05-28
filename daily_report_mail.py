@@ -10,10 +10,10 @@ import json
 import logging
 import os
 from datetime import datetime, timedelta
+from jinja2 import Environment, FileSystemLoader
 
 from configuration import get_prop, CONFIG
 from utilities.mail_utilities import send_mail
-from utilities.template_utilities import Template
 from utilities.test_utilities import html_report_from_json
 
 THRESHOLD_HOURS = 32
@@ -25,7 +25,7 @@ logging.basicConfig(handlers=[logging.FileHandler(LOG_FILE, 'a', 'utf-8')], leve
 def load_affected_test_reports(file_path):
     """Load all test reports at the given path, for the given time range and having exceptions, failures or warnings."""
     affected_test_reports = []
-    with open(file_path, 'r') as f:
+    with open(file_path, 'r', encoding='utf-8') as f:
         for line in f:
             if line.strip().startswith("{"):
                 json_data = json.loads(line.strip())
@@ -40,28 +40,32 @@ def load_affected_test_reports(file_path):
     return affected_test_reports
 
 
-def process_reports(body: Template):
+def process_reports(params: dict):
     test_reports_folder = CONFIG['folders']['test_reports']
     for filename in [f[:-6] for f in os.listdir(test_reports_folder) if f.endswith('.jsonl')]:
         file_path = os.path.join(test_reports_folder, filename + ".jsonl")
         affected_test_reports = load_affected_test_reports(file_path)
         if len(affected_test_reports) > 0:
-            body.append("payload", f"<h2>{filename}</h2>\n")
+            params['payload'] += f"<h2>{filename}</h2>\n"
             for report in affected_test_reports:
-                body.append("payload", html_report_from_json(report))
+                params['payload'] += html_report_from_json(report)
 
 
 def process():
     logging.info("daily_report_mail.py started.")
     subject = "data_tests: Daily Report of Exceptions, Failures and Warnings"
     recipients = get_prop("skiplus_support")
-    body = Template("daily_report_mail_body.html")
-    body.replace("THRESHOLD_HOURS", THRESHOLD_HOURS)
-    body.replace("subject", subject)
+    env = Environment(loader=FileSystemLoader('templates'))
+    body = env.get_template('daily_report_mail_body.html')
+    params = {
+        "THRESHOLD_HOURS": THRESHOLD_HOURS,
+        "subject": subject,
+        "dashboard_url": CONFIG['dashboard_url'],
+        "payload": ''
+    }
+    process_reports(params)
 
-    process_reports(body)
-
-    return_code, message = send_mail(subject=subject, recipients_comma_separated=recipients, body=str(body))
+    return_code, message = send_mail(subject=subject, recipients_comma_separated=recipients, body=str(body.render(params)))
     logging.info(f"daily_report_mail.py finished: {return_code}, {message}.")
 
 
