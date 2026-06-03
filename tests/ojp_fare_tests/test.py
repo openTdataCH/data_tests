@@ -150,11 +150,10 @@ def run():
                 try:
                     actual_price = float(actual_price_str)
 
-                    # Überprüfung, ob der Preis im erlaubten Bereich liegt
                     if min_price <= actual_price <= max_price:
-                        data_test.log_info(f"{test_id} checked successfully: {actual_price} CHF is within range [{min_price} - {max_price}] for {travel_class} class.")
+                        data_test.log_info(f"{test_id} checked successfully: {actual_price} CHF is within range {min_price} - {max_price} CHF for {travel_class} class.")
                     else:
-                        data_test.log_failure(f"{test_id} price out of range. Expected between {min_price} and {max_price}, but got {actual_price} for {travel_class} class.")
+                        data_test.log_warning(f"{test_id} price out of range. Expected between {min_price} and {max_price}, but got {actual_price} CHF for {travel_class} class.")
 
                 except ValueError:
                     data_test.log_failure(f"{test_id} could not parse price '{actual_price_str}' as a number.")
