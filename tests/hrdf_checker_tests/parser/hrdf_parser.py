@@ -5,13 +5,15 @@ import datetime
 import os
 import re
 import shutil
-import tempfile
 import zipfile
 from enum import Enum
 from typing import List, TypeVar
-from utilities.test_utilities import DataTest
 
 from typing_extensions import TypedDict, Callable
+
+from utilities.file_and_path_utilities import get_path
+from utilities.test_utilities import DataTest
+
 
 def has_bom(seq: bytes):
     return "BOM" if seq[0:3] == b'\xef\xbb\xbf' else "NO BOM"
@@ -173,7 +175,7 @@ class HRDFParser:
     }
 
     def __init__(self, hrdf_file_path, data_test: DataTest,
-                 temporary_file_path=os.path.join(tempfile.gettempdir(), "hrdf")):
+                 temporary_file_path=get_path("tests/hrdf_checker_tests/data/hrdf")):
         self.hrdf_file_path = hrdf_file_path
         self.temporary_file_path = temporary_file_path
         self.data_test = data_test
