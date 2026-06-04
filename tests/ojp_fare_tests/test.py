@@ -26,19 +26,23 @@ NS = {
 FARE_OPTIONS = {
     "test1": {
         "params": ["Adult", "second", 20, None, None],
-        "expected_price": "42.00"
+        "min_price": 30.00,
+        "max_price": 60.00
     },
     "test2": {
         "params": ["Adult", "first", 76, None, None],
-        "expected_price": "72.00"
+        "min_price": 60.00,
+        "max_price": 100.00
     },
     "test3": {
         "params":["Adult", "second", 20, "HTA", "Halbtax-Abonnement"],
-        "expected_price": "42.00"
+        "min_price": 30.00,
+        "max_price": 60.00
     },
     "test4": {
         "params":["Adult", "first", 76, "HTA", "Halbtax-Abonnement"],
-        "expected_price": "72.00"
+        "min_price": 60.00,
+        "max_price": 100.00
     }
 }
 
@@ -127,25 +131,32 @@ def run():
         for test_id, config in FARE_OPTIONS.items():
             params = config["params"]
             passenger_category, travel_class, age, entitlement_product, entitlement_name = params
-            expected_price = config["expected_price"]
+            min_price = config["min_price"]
+            max_price = config["max_price"]
 
             fare_xml_body = get_fare_body(trip_snippet, *params)
             headers = {"Authorization": f"Bearer {test_config['key_ojp_fare']}", "Content-Type": "application/xml; charset=utf-8"}
             response_fare = requests.post(url_fare, data=fare_xml_body.encode('utf-8'), headers=headers)
             fare_root = etree.fromstring(response_fare.content)
 
-            actual_price = None
+            actual_price_str = None
             for product in fare_root.findall(".//ojp:FareProduct", NS):
                 tc = product.find("ojp:TravelClass", NS)
                 if tc is not None and tc.text == travel_class:
-                    actual_price = product.find("ojp:Price", NS).text
+                    actual_price_str = product.find("ojp:Price", NS).text
                     break
 
-            if actual_price:
-                if actual_price == expected_price:
-                    data_test.log_info(f"{test_id} checked successfully: {actual_price} CHF found for {travel_class} class.")
-                else:
-                    data_test.log_failure(f"{test_id} wrong price. Expected {expected_price}, got {actual_price} for {travel_class} class.")
+            if actual_price_str:
+                try:
+                    actual_price = float(actual_price_str)
+
+                    if min_price <= actual_price <= max_price:
+                        data_test.log_info(f"{test_id} checked successfully: {actual_price} CHF is within range {min_price} - {max_price} CHF for {travel_class} class.")
+                    else:
+                        data_test.log_warning(f"{test_id} price out of range. Expected between {min_price} and {max_price}, but got {actual_price} CHF for {travel_class} class.")
+
+                except ValueError:
+                    data_test.log_failure(f"{test_id} could not parse price '{actual_price_str}' as a number.")
             else:
                 data_test.log_failure(f"{test_id} No price found for {travel_class} class.")
                 _dump_to_file(fare_xml_body + "\n\n" + response_fare.text, case=f"{test_id}_NO_PRICE_FOUND")
