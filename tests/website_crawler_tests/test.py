@@ -88,7 +88,7 @@ def crawl(uh: UrlHandler, data_test: DataTest):
     message = f"Completed crawling, visited: {uh.visited_size()}, non200: {uh.non200_size()} / {uh.non200_count()}, {uh.bytes_count()/1000000:.6f} MB."
     logger.info(message)
     warning_threshold =  CONFIG.get('warning_threshold')
-    count_404 = len(uh.non200_count().get(404))
+    count_404 = uh.non200_count().get(404)
     if warning_threshold and count_404 >= warning_threshold:
         logger.warning(f"Total count of 404 responses is {count_404}, exceeds the given warning_threshold {warning_threshold}!")
     data_test.log_info(message)

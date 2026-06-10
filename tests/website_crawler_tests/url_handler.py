@@ -79,6 +79,9 @@ class UrlHandler:
     def non200_count(self) -> dict:
         return {k: len(self.non200[k]) for k in sorted(self.non200.keys())}
 
+    def non200_dict(self) -> dict:
+        return self.non200
+
     def bytes_add(self, n_bytes: int):
         self.n_bytes += n_bytes
 
