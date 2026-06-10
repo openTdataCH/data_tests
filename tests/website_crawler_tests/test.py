@@ -10,7 +10,8 @@ The file ./data/config.json must look like this:
   "initial_backlog": [
      "https://url.to_server.example1.com/page1",
      "https://url.to_server.example2.com"
-  ]
+  ],
+  "warning_threshold": 10
 }
 
 
