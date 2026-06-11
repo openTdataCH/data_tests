@@ -82,21 +82,14 @@
       "required_file": true,
       "columns": {
         "stop_id": { "required": true, "unique": true },
-        "stop_code": { "required": false },
         "stop_name": { "required": false },
-        "tts_stop_name": { "required": false },
-        "stop_desc": { "required": false },
         "stop_lat": { "required": false, "regex": "^-?([0-8]?[0-9](\\.\\d+)?|90(\\.0+)?)$" },
         "stop_lon": { "required": false, "regex": "^-?([1]?[0-7]?[0-9](\\.\\d+)?|180(\\.0+)?)$" },
-        "zone_id": { "required": false },
-        "stop_url": { "required": false, "regex": "^https?://.+" },
         "location_type": { "required": false, "enum": ["0", "1", "2", "3", "4"] },
         "parent_station": { "required": false },
-        "stop_timezone": { "required": false },
-        "wheelchair_boarding": { "required": false, "enum": ["0", "1", "2"] },
-        "level_id": { "required": false },
         "platform_code": { "required": false },
-        "original_stop_id": { "required": false }
+        "original_stop_id": { "required": false },
+        "didok":  { "required": false }
       }
     },
     "trips.txt": {
