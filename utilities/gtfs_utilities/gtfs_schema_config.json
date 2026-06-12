@@ -89,7 +89,8 @@
         "parent_station": { "required": false },
         "platform_code": { "required": false },
         "original_stop_id": { "required": false },
-        "didok":  { "required": false }
+        "didok":  { "required": false },
+        "stop_desc": { "required": false }
       }
     },
     "trips.txt": {
