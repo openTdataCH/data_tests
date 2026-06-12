@@ -2,21 +2,21 @@
 Test the gtfs files.
 The run method requires no config at all (hence, no 'config' parameter).
 """
+from datetime import date
 
 from utilities.test_utilities import DataTest
 from utilities.gtfs_utilities.gtfs_utilities import check_gtfs
 
+TEST_NAME = "gtfs_checker_tests"
 
-def run():
-    data_test = DataTest(name="gtfs_checker_tests")
-
-    gtfs_2026_url = "https://data.opentransportdata.swiss/dataset/timetable-2026-gtfs2020/permalink"
-    gtfs_fahrplanentwurf_url = "https://data.opentransportdata.swiss/dataset/timetable-draft-gtfs/permalink"
-
-    check_gtfs(gtfs_2026_url, data_test)
-    data_test.log_info("GTFS 2026 Schema check completed.")
-    check_gtfs(gtfs_fahrplanentwurf_url, data_test)
-    data_test.log_info("GTFS Fahrplanentwurf Schema check completed.")
+def run(variant: str = None) -> DataTest:
+    if variant is None:
+        variant = str(date.today().year)
+    data_test = DataTest(name=f"{TEST_NAME}_{variant}")
+    if variant == "gtfs_fahrplanentwurf":
+        check_gtfs("https://data.opentransportdata.swiss/dataset/timetable-draft-gtfs/permalink", data_test)
+    else:
+        check_gtfs(f"https://data.opentransportdata.swiss/dataset/timetable-{variant}-gtfs2020/permalink", data_test)
 
     return data_test
 

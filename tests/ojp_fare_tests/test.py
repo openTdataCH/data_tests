@@ -106,15 +106,16 @@ def run():
 
     #Trip request
     status, size, trip_xml = ojp10_triprequest(
-        a_bpuic="8503000",
+        a_bpuic="ch:1:sloid:3000",
         a_name="Zürich (Zürich)",
-        b_bpuic="8509000",
+        b_bpuic="ch:1:sloid:9000",
         b_name="Chur (Chur)",
         departure_time_iso8601=f"{timestamp}T11:12:00.000Z",
         return_as="xml",
         data_test=data_test
     )
     conn_text = f"Zürich -> Chur"
+    trip_string = etree.tostring(trip_xml)
 
     if status != 200 or isinstance(trip_xml, str) and trip_xml.startswith("<xml><ERROR>"):
         data_test.log_failure(f"Trip Request failed: {status}, response: {trip_xml}")
@@ -156,12 +157,12 @@ def run():
                         data_test.log_warning(f"{test_id} price out of range. Expected between {min_price} and {max_price}, but got {actual_price} CHF for {travel_class} class.")
 
                 except ValueError:
-                    data_test.log_failure(f"{test_id} could not parse price '{actual_price_str}' as a number.")
+                    data_test.log_failure(f"{test_id} could not parse price '{actual_price_str}' as a number. {response_fare.text}")
             else:
-                data_test.log_failure(f"{test_id} No price found for {travel_class} class.")
+                data_test.log_failure(f"{test_id} No price found for {travel_class} class. {response_fare.text}")
                 _dump_to_file(fare_xml_body + "\n\n" + response_fare.text, case=f"{test_id}_NO_PRICE_FOUND")
     else:
-        data_test.log_failure("No Trip element found")
+        data_test.log_failure(f"No Trip element found {trip_string}")
     return data_test
 
 if __name__ == '__main__':
