@@ -240,7 +240,7 @@ class BrunoRunner:
                     self.data_test.log_warning(f"Parsing JSON-Report was not possible: {e}.")
 
             if report is None:
-                self.data_test.log_failure(f"Kritischer Fehler: Bruno-CLI hat keinen Report generiert!")
+                self.data_test.log_failure(f"Critical error: Bruno-CLI did not create a report!")
                 self.data_test.log_failure(f"CLI STDOUT:\n{stdout}")
                 if stderr:
                     self.data_test.log_failure(f"CLI STDERR:\n{stderr}")
