@@ -238,6 +238,13 @@ class BrunoRunner:
                 except Exception as e:
                     self.data_test.log_warning(f"Parsing JSON-Report was not possible: {e}.")
 
+            if report is None:
+                self.data_test.log_failure(f"Kritischer Fehler: Bruno-CLI hat keinen Report generiert!")
+                self.data_test.log_failure(f"CLI STDOUT:\n{stdout}")
+                if stderr:
+                    self.data_test.log_failure(f"CLI STDERR:\n{stderr}")
+                return None, 0, stdout
+
             executed_requests = report["summary"]["requests"]
             failed_assertions = report["summary"]["assertions"]["failed"]
 
