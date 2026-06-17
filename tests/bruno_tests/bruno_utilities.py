@@ -202,7 +202,8 @@ class BrunoRunner:
 
         with tempfile.TemporaryDirectory(prefix="bru-run-") as tmpd:
             report_path = os.path.join(tmpd, "report.json")
-            cmd = self.build_cmd(report_path, env_vars)
+            cmd_list = self.build_cmd(report_path, env_vars)
+            cmd = " ".join([f'"{arg}"' if " " in arg or "\\" in arg or "/" in arg else arg for arg in cmd_list])
             child_env = os.environ.copy()
             child_env.update(env_vars)
 
