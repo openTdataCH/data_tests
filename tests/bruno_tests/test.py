@@ -120,7 +120,7 @@ def run(variant: str = None) -> DataTest:
                 report, executed, stdout = runner.run(env_vars=env, timeout=120, strict=False)
 
                 if not report or "requests" not in report or not report["requests"]:
-                    data_test.log_warning(f"--- DEBUG für {file_name} ---")
+                    data_test.log_warning(f"--- DEBUG for {file_name} ---")
                     data_test.log_warning(f"STDOUT: {stdout}")
                     data_test.log_warning(f"REPORT: {json.dumps(report, indent=2) if report else 'None'}")
 
@@ -163,5 +163,5 @@ def run(variant: str = None) -> DataTest:
     return data_test
 
 if __name__ == '__main__':
-    tr = run(variant="OJP1.0_Sample")
+    tr = run(variant="OJP1.0")
     print(tr)
