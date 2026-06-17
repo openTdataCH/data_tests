@@ -119,12 +119,17 @@ def run(variant: str = None) -> DataTest:
                 runner = BrunoRunner(file_name, data_test=data_test, working_dir=file_dir)
                 report, executed, stdout = runner.run(env_vars=env, timeout=120, strict=False)
 
+                if not report or "requests" not in report or not report["requests"]:
+                    data_test.log_warning(f"--- DEBUG für {file_name} ---")
+                    data_test.log_warning(f"STDOUT: {stdout}")
+                    data_test.log_warning(f"REPORT: {json.dumps(report, indent=2) if report else 'None'}")
+
                 match = _HEADER_RE.search(stdout) if stdout else None
                 h_name = match.group(1) if match else file_name
                 h_status = match.group(2) if match else "200"
                 h_duration = match.group(3) if match else "0"
 
-                if report and report.get("requests"):
+                if report and isinstance(report.get("requests"), list) and len(report["requests"]) >0:
                     req = report["requests"][0]
                     f_count = report["summary"]["assertions"]["failed"]
                     p_count = report["summary"]["assertions"]["passed"]
@@ -141,6 +146,9 @@ def run(variant: str = None) -> DataTest:
 
                     total_conditions += p_count + f_count
                     executed_tests += p_count
+                else:
+                    data_test.log_warning(f"No valid report or requests found for {file_name}. STDOUT: {stdout}")
+                    total_conditions_failed += 1
 
             except Exception as e:
                 data_test.log_failure(f"Critical error in {file_name}: {str(e)}")
@@ -155,5 +163,5 @@ def run(variant: str = None) -> DataTest:
     return data_test
 
 if __name__ == '__main__':
-    tr = run(variant="OJP2.0_Sample")
+    tr = run(variant="OJP1.0_Sample")
     print(tr)
