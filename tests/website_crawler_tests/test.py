@@ -11,6 +11,10 @@ The file ./data/config.json must look like this:
      "https://url.to_server.example1.com/page1",
      "https://url.to_server.example2.com"
   ],
+  "ignore_urls": [
+    "https://url.that.should.not.be.tested.example1.com",
+    "https://url.that.should.not.be.tested.example2.com"
+  ]
   "warning_threshold": 10
 }
 
@@ -41,12 +45,13 @@ logger.propagate = False
 
 OK, WARN, NOK, SMILE = "✅", "⚠", "⛔", "😊"
 
+TRUNCATE_AT = 100
 
 def run():
     data_test = DataTest(name=TEST_NAME)
     if CONFIG is None:
         raise ValueError(f"Error in {TEST_NAME}: config.json not found, test terminated.")
-    wc = WebsiteCrawler(CONFIG['initial_backlog'], CONFIG['initial_backlog'], logger=logger, log_sampling=1)
+    wc = WebsiteCrawler(CONFIG.get('initial_backlog'), ignore_urls=CONFIG.get('ignore_urls'), logger=logger)
     wc.crawl()
     data_test.log_info(str(wc))
     sc_count = wc.get_status_code_count()
@@ -58,7 +63,8 @@ def run():
             web_pages = wc.get_web_pages_for_status_code(status_code)
             for web_page in web_pages:
                 found_in = sorted(web_page.found_in)
-                data_test.log_info(f"- status code {status_code} for {web_page.url_str} - excerpt: {web_page.excerpt}... - URL found in these pages (first 10 of a total of {len(found_in)}):\n- {'\n- '.join(found_in[:10])}")
+                data_test.log_info(f"- status code {status_code} for {web_page.url_str} - excerpt: {web_page.excerpt}... -" \
+                        f"\nThis URL was found in these {len(found_in)} pages{f' (first {TRUNCATE_AT} only)' if len(found_in) > TRUNCATE_AT else ''}:\n- {'\n- '.join(found_in[:TRUNCATE_AT])}")
                 total += 1
     threshold = CONFIG['warning_threshold']
     if threshold and total >= threshold:
