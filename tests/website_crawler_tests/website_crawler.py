@@ -1,24 +1,34 @@
-"""A module providing covering all that's needed to perform a webcrawler test series.
-- Is initialized with an initial backlog of URLs, and with URL stems of our website.
-- a backlog of URLs is set up and managed.
+"""A module to perform web crawler tests on a given website. The main class is the WebsiteCrawler.
+The WebsiteCrawler checks a given "backlog" of URLs and checks their http response (status code, size).
+WebsiteCrawler initialization parameters:
+- initial backlog of URLs.
+- initial_backlog: the initial list of URLs to check.
+- own_site_url_stems: URLs of our "own" website. Any of your "own" URLs must begin with one of the stems.
+  (default: same as initial_backlog).
+- ignore_urls: list of URLs that should not be checked.
+- logger: a logger for producing logs (info() messages.
+- log_sampling: a number n > 1 to log only samples (every n message).
+
+Further hints:
 - any URL is canonized and then entered only once.
-- only relevant URLs are entered, basically only HTML pages.
+- only relevant URLs are checked, basically only HTML pages. Images, CSS, etc. are ignored.
 - URLs are either "own" (based on URL stems) or "other".
 - all URLs in the backlog are visited once, and the response code, size, etc. is recorded.
 - for own URLs, the response is parsed and all relevant URLs are entered in the backlog.
 - each URL also registers all places it is found in (initial backlog or other pages)
-- The backlog is processed until all pages are visited.
-- at the end, detailed statistics can be called.
+- The backlog is processed until all pages have been visited.
+- at the end, detailed statistics can be retrieved from the self.backlog.
 """
 
+import sys
+from collections import defaultdict
 
 import logging
 import re
 import requests
+from datetime import datetime as dt
 from enum import Enum
 from typing import Iterable
-from datetime import datetime as dt
-from collections import defaultdict
 
 NOT_RELEVANT_URL_ENDINGS = [".css", ".js", ".ico", ".svg", ".png", ".jpg", ".gif", ".php", ".jsonld", ".n3", ".ttl",
                          ".xml", ".json", ".zip", ".pdf", ".jpeg", "wp-json", ".xlsx", ".csv", ".txt", "embed",
@@ -70,11 +80,16 @@ class WebPage:
 
 class WebsiteCrawler:
 
-    def __init__(self, initial_backlog: list, own_site_url_stems: list, logger: logging.Logger = None, log_sampling=10):
+    def __init__(self, initial_backlog: list, own_site_url_stems: list = None, ignore_urls = None, logger: logging.Logger = None, log_sampling=1):
         self.created = dt.now().isoformat()
-        self.initial_backlog = initial_backlog
-        self.own_site_url_stems = own_site_url_stems
-        self.logger = logger
+        self.initial_backlog = list(initial_backlog)
+        self.own_site_url_stems = list(own_site_url_stems) if own_site_url_stems else self.initial_backlog
+        self.ignore_urls = list(ignore_urls) if ignore_urls else []
+        if logger is None:
+            logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+            self.logger = logging
+        else:
+            self.logger = logger
         self.log_sampling = log_sampling
         self.backlog = {}
         for url in initial_backlog:
@@ -141,12 +156,13 @@ class WebsiteCrawler:
 
     def add_to_backlog(self, urls: Iterable, found_in: str):
         for url in urls:
-            web_page = self.backlog.get(url)
-            if web_page is None:
-                kind = self.classify_url(url)
-                web_page = WebPage(url, own=(kind==UrlType.OWN))
-                self.backlog[url] = web_page
-            web_page.add_found_in(found_in)
+            if url not in self.ignore_urls:
+                web_page = self.backlog.get(url)
+                if web_page is None:
+                    kind = self.classify_url(url)
+                    web_page = WebPage(url, own=(kind==UrlType.OWN))
+                    self.backlog[url] = web_page
+                web_page.add_found_in(found_in)
 
     def classify_url(self, url: str) -> UrlType:
         u = canonize_url(url)
@@ -178,3 +194,11 @@ class WebsiteCrawler:
 
     def __str__(self):
         return f"WebsiteCrawler status: backlog size: {len(self.backlog)} - {self.get_bytes_total()/1000000:.6f} MB - status codes: {self.get_status_code_count()}"
+
+
+if __name__ == '__main__':
+    print("a simple test run with a narrow backlog example.")
+    backlog = ['https://opentransportdata.swiss/en/cookbook/accessibility-cookbook']
+    ignore_urls = ['https://www.linkedin.com/company/systemaufgaben-kundeninformation-ski']
+    wc = WebsiteCrawler(backlog, ignore_urls=ignore_urls)
+    wc.crawl()
