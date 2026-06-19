@@ -1,6 +1,7 @@
 import os
 from datetime import date
 from enum import Enum
+from pathlib import Path
 
 from typing_extensions import Iterable, Sized
 
@@ -89,7 +90,9 @@ def run(data_test: DataTest, variant: str, static_mode = False):
     if variant is None:
         variant = str(date.today().year)
     base_path = os.path.split(__file__)[0]
-    files_path = os.path.join(base_path, "hrdf_files")
+    files_path = os.path.join(base_path, "data", variant, "hrdf_files")
+    files_path = Path(files_path)
+    files_path.mkdir(parents=True, exist_ok=True)
     hrdf_file_name = "hrdf.zip"
     dienststellen_file_name = "dienststellen.csv"
     if not static_mode:
@@ -103,7 +106,7 @@ def run(data_test: DataTest, variant: str, static_mode = False):
     else:
         data_test.log_warning(f"Static mode has been enabled, the plugin will not fetch any data")
     hrdf_parser_object = HRDFParser(os.path.join(files_path,
-                                                 hrdf_file_name), data_test)
+                                                 hrdf_file_name), data_test, variant)
     csv_parser_object = CSVParser(os.path.join(files_path,
                                                dienststellen_file_name), data_test)
     try:

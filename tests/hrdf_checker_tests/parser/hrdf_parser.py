@@ -174,11 +174,12 @@ class HRDFParser:
         }
     }
 
-    def __init__(self, hrdf_file_path, data_test: DataTest,
-                 temporary_file_path=get_path("tests/hrdf_checker_tests/data/hrdf")):
+    def __init__(self, hrdf_file_path, data_test: DataTest, variant: str,
+                 temporary_file_path=None):
         self.hrdf_file_path = hrdf_file_path
-        self.temporary_file_path = temporary_file_path
         self.data_test = data_test
+        self.variant = variant
+        self.temporary_file_path = get_path(f"tests/hrdf_checker_tests/data/{variant}/hrdf_tmp") if temporary_file_path is None else temporary_file_path
         self.__extract_zip()
 
     def __extract_zip(self):
