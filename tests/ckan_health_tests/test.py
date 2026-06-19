@@ -106,8 +106,8 @@ LESS_THAN_DAILY_UPDATES_UTC = {
     'list-sjyid-2026-v2': 'TUE22,FRI22',
     'timetable-54-2026-hrdf-autoverlad': 'TUE21,FRI21',
     'timetable-54-2026-hrdf': 'TUE21,FRI21',
-    'timetable-54-2027-hrdf-autoverlad': 'TUE21, FRI21',
-    'timetable-54-2027-hrdf': 'TUE21, FRI21',
+    'timetable-54-2027-hrdf-autoverlad': 'TUE21,FRI21',
+    'timetable-54-2027-hrdf': 'TUE21,FRI21',
     'hrdf_odv': 'TUE08,FRI08',
     'netex_tt_odv': 'MON10,THU10',
     'timetablenetex_2026': 'TUE01,FRI01'
