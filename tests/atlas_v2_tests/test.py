@@ -24,6 +24,7 @@ SIZE_THRESHOLDS = [0.8, 1.2]
 AGE_IN_DAYS_THRESHOLD = 1.01
 ALPHA = 0.2  # alpha factor for the Exponential Moving Average (EMA) of the sizes
 
+CKAN_BASE_URL = "https://data.opentransportdata.swiss/dataset"
 
 def run() -> dict:
     data_test = DataTest(name="atlas_v2_tests")
@@ -36,7 +37,7 @@ def run() -> dict:
             try:
                 region = "swiss-" if dataset == "service-point" else ("world-" if dataset == "traffic-point" else "")
                 identifier = f"{flavour}-{region}{dataset}.csv"
-                url = f"https://data.opentransportdata.swiss/dataset/{dataset}-v2/resource_permalink/{identifier}"
+                url = f"{CKAN_BASE_URL}/{dataset}-v2/resource_permalink/{identifier}"
                 header, rows, status_code, data_test = load_csv_from_url(url, data_test=data_test, silent=True)
                 if status_code < 400:
                     if ref_sizes:
@@ -52,11 +53,13 @@ def run() -> dict:
                     metadata_resource = resource_by_identifier(meta_data, identifier)
                     age = age_in_days(metadata_resource.get("issued"))
                     if age >= AGE_IN_DAYS_THRESHOLD:
-                        data_test.log_failure(f"FAILED age check, age {age:.3f} days is above threshold {AGE_IN_DAYS_THRESHOLD:.3f} days.\n--> https://data.opentransportdata.swiss/dataset/{dataset}-v2 --> {flavour}")
+                        data_test.log_failure(f"FAILED age check, age {age:.3f} days is above threshold {AGE_IN_DAYS_THRESHOLD:.3f} days.\n--> {CKAN_BASE_URL}/{dataset}-v2 --> {flavour}")
                     else:
                         sucesses = sucesses + identifier + ', '
                 else:
                     data_test.log_failure(f"Response {status_code} for {identifier}.")
+                    data_test.log_info(f"- dataset: {CKAN_BASE_URL}/{dataset}-v2")
+                    data_test.log_info(f"- harvester: {CKAN_BASE_URL}/{dataset}-v2-harvester")
 
             except Exception as e:
                 data_test.log_exception(f"Data test for {dataset}/{flavour} failed with exception: {e}", e)
