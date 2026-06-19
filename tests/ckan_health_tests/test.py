@@ -137,7 +137,7 @@ def _acceptable_age_in_days(dataset):
         return 999999.99
 
     if dataset in LESS_THAN_DAILY_UPDATES_UTC.keys():
-        due_on = LESS_THAN_DAILY_UPDATES_UTC[dataset].split(",")
+        due_on = [d.strip() for d in LESS_THAN_DAILY_UPDATES_UTC[dataset].split(",")]
         min_age_d = 999999.99
         for d in due_on:
             weekday, hour = d[0:3], int(d[3:5])
