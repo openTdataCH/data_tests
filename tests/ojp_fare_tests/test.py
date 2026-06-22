@@ -26,7 +26,7 @@ NS = {
 FARE_OPTIONS = {
     "test1": {
         "params": ["Adult", "second", 20, None, None],
-        "min_price": 30.00,
+        "min_price": 20.00,
         "max_price": 60.00
     },
     "test2": {
@@ -36,7 +36,7 @@ FARE_OPTIONS = {
     },
     "test3": {
         "params":["Adult", "second", 20, "HTA", "Halbtax-Abonnement"],
-        "min_price": 30.00,
+        "min_price": 20.00,
         "max_price": 60.00
     },
     "test4": {
