@@ -159,7 +159,7 @@ def run():
                 except ValueError:
                     data_test.log_failure(f"{test_id} could not parse price '{actual_price_str}' as a number. {response_fare.text}")
             else:
-                error_text = "Unknown Error"
+                error_text = response_fare.text
 
                 error_element = fare_root.find(".//ns2:ErrorText", NS)
                 if error_element is None:
