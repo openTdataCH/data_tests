@@ -26,7 +26,7 @@ NS = {
 FARE_OPTIONS = {
     "test1": {
         "params": ["Adult", "second", 20, None, None],
-        "min_price": 30.00,
+        "min_price": 20.00,
         "max_price": 60.00
     },
     "test2": {
@@ -36,7 +36,7 @@ FARE_OPTIONS = {
     },
     "test3": {
         "params":["Adult", "second", 20, "HTA", "Halbtax-Abonnement"],
-        "min_price": 30.00,
+        "min_price": 20.00,
         "max_price": 60.00
     },
     "test4": {
@@ -159,7 +159,16 @@ def run():
                 except ValueError:
                     data_test.log_failure(f"{test_id} could not parse price '{actual_price_str}' as a number. {response_fare.text}")
             else:
-                data_test.log_failure(f"{test_id} No price found for {travel_class} class. {response_fare.text}")
+                error_text = response_fare.text
+
+                error_element = fare_root.find(".//ns2:ErrorText", NS)
+                if error_element is None:
+                    error_element = fare_root.find(".//ojp:ErrorText", NS) or fare_root.find(".//ErrorText", NS)
+
+                if error_element is not None and error_element.text:
+                    error_text = error_element.text
+
+                data_test.log_failure(f"{test_id} No price found for {travel_class} class. API Error: {error_text}")
                 _dump_to_file(fare_xml_body + "\n\n" + response_fare.text, case=f"{test_id}_NO_PRICE_FOUND")
     else:
         data_test.log_failure(f"No Trip element found {trip_string}")

@@ -16,9 +16,20 @@ from datetime import datetime as dt, timezone, timedelta
 
 
 NOW = dt.now(timezone.utc)
+TEST_NAME = "ckan_health_tests"
+CONFIG_FILE = f"tests/{TEST_NAME}/data/config.json"
+config = load_json_file(CONFIG_FILE)
+if not config:
+    raise FileNotFoundError(f"Config file not found at {CONFIG_FILE}")
 
-DS_PATH = "tests/ckan_health_tests/data/datasets.json"
-
+DS_PATH = f"tests/{TEST_NAME}/data/datasets.json"
+EXCLUDED_DATASETS = config["excluded_datasets"]
+EXCLUDED_PERMALINK_AGE_CHECK = config["excluded_permalink_age_check"]
+DATASETS_WITH_RESSOURCES_OF_UNLIMITED_AGE = config["datasets_with_resources_of_unlimited_age"]
+LESS_THAN_DAILY_UPDATES_UTC = config["less_than_daily_updates_utc"]
+MINIMUM_ACCEPTABLE_AGE = config["minimum_acceptable_age"]
+DEFAULT_ACCEPTABLE_AGE = config["default_acceptable_age"]
+EXCLUDED_NON_DAILY_CRONS = config["excluded_non_daily_crons"]
 
 def get_datasets(data_test: DataTest) -> dict:
     """Gets a dict with dataset id (slug)/identifier as key/value pairs; if not in available at DS_PATH, load and save it.
@@ -40,9 +51,6 @@ def get_datasets(data_test: DataTest) -> dict:
         except Exception as e:
             data_test.log_exception(f"get_datasets failed with {str(e)}", e)
             return {}
-
-
-EXCLUDED_NON_DAILY_CRONS = ('gtfs2020-harvester', )
 
 def check_harvesters(harvesters: list, data_test: DataTest) -> dict:
     harvester_to_datasets_mapping = {}
@@ -80,40 +88,6 @@ def check_harvesters(harvesters: list, data_test: DataTest) -> dict:
     data_test.log_info(f"CKAN harvester tests: Checked {len(harvesters)}: {count_hanging} hanging, {count_too_old} older than a day.")
 
     return harvester_to_datasets_mapping
-
-
-EXCLUDED_DATASETS = ('business-organisations', 'formations', 'gtfsrt', 'gtfs-sa', 'halte', 'hrdf_test_207',
-                    'lod-pilot', 'netex-fernbus', 'ojp2-0', 'ojp2020', 'ojpfare', 'osdm-offline', 'rds-tmc',
-                    'siri-et', 'siri-pt', 'siri-sx', 'trafficcountersrealtime', 'trafficlights-road-dynamic',
-                    'trafficsituations', 'vm-liste')
-EXCLUDED_PERMALINK_AGE_CHECK = ("business-organisation-v2", "contact-point-v2", "line-v2", "parking-lot-v2",
-                                "platform-v2", "reference-point-v2", "relation-v2", "sectors-and-sector-groups-v2",
-                                "service-point-v2", "stop-point-v2", "subline-v2", "timetable-field-number-v2",
-                                "toilet-v2", "traffic-point-v2")
-DATASETS_WITH_RESSOURCES_OF_UNLIMITED_AGE = (
-    'timetable-2027-gtfs2020', 'timetablenetex_2027', # temporarily set, until mid juin 2026
-    'atzgf', 'einundaus', 'ereignisinformationen', 'ga-hta-liste1', 'go-realtime', 'go-siri-sx', 'go-siri-sx-infra',
-    'ladestationen', 'sharedmobility', 'timetable-draft-gtfs', 'verbundsabos', 'vnch-swisstne', 'zugzahlen',
-    'netex-fernbus', 'timetable-2024-gtfs2020', 'timetable-2025-gtfs2020', 'list-sjyid',
-    'timetable-54-2024-hrdf-autoverlad', 'timetable-54-2025-hrdf-autoverlad',
-    'list-sjyid-2025', 'list-sjyid-2025-v2',
-    'timetable-54-2024-hrdf', 'timetable-54-2025-hrdf', 'timetable-54-draft-hrdf',
-    'timetablenetex_2024', 'timetablenetex_2025', 'trafficcounters', 'trafficlights-road-static')
-LESS_THAN_DAILY_UPDATES_UTC = {
-    'gtfsflex': 'MON09,THU09',
-    'timetable-2026-gtfs2020': 'THU08,MON08',
-    'list-sjyid-2026': 'TUE22,FRI22',
-    'list-sjyid-2026-v2': 'TUE22,FRI22',
-    'timetable-54-2026-hrdf-autoverlad': 'TUE21,FRI21',
-    'timetable-54-2026-hrdf': 'TUE21,FRI21',
-    'timetable-54-2027-hrdf-autoverlad': 'TUE21,FRI21',
-    'timetable-54-2027-hrdf': 'TUE21,FRI21',
-    'hrdf_odv': 'TUE08,FRI08',
-    'netex_tt_odv': 'MON10,THU10',
-    'timetablenetex_2026': 'TUE01,FRI01'
-}
-MINIMUM_ACCEPTABLE_AGE = 0.25
-DEFAULT_ACCEPTABLE_AGE = 1.1
 
 def _get_past_instant(target_weekday_str, target_hour):
     WD = {"mon": 0, "tue": 1, "wed": 2, "thu": 3, "fri": 4, "sat": 5, "sun": 6}
@@ -191,8 +165,8 @@ def check_datasets_permalink_and_age(datasets: dict, harvester_to_datasets_mappi
     data_test.log_info(f"CKAN dataset tests: Checked {len(datasets)}, {count_permalink_fails} permalink errors, {count_age_fails} exceeding acceptable age.")
 
 
-def run(config: dict = None):
-    data_test = DataTest(name="ckan_health_tests")
+def run():
+    data_test = DataTest(name=TEST_NAME)
     packages, data_test = load_ckan_package_list(data_test)
 
     harvesters = [h for h in packages if 'harvester' in h]
@@ -205,6 +179,5 @@ def run(config: dict = None):
 
 
 if __name__ == '__main__':
-    from configuration import CONFIG
-    tr = run(config=CONFIG)
+    tr = run()
     print(tr)
