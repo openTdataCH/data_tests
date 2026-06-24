@@ -11,7 +11,8 @@ WebsiteCrawler initialization parameters:
 
 Further hints:
 - any URL is canonized and then entered only once.
-- only relevant URLs are checked, basically only HTML pages. Images, CSS, etc. are ignored.
+- only relevant URLs are checked, basically only HTML pages.
+- Images, CSS, etc. are ignored.
 - URLs are either "own" (based on URL stems) or "other".
 - all URLs in the backlog are visited once, and the response code, size, etc. is recorded.
 - for own URLs, the response is parsed and all relevant URLs are entered in the backlog.
