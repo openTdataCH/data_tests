@@ -30,7 +30,8 @@ EXCLUDED_URLS = {
     "https://sharedmobility.ch/v2/gbfs/bird-basel/geofencing_zones",
     "https://sharedmobility.ch/free_bike_status.json",
     "https://sharedmobility.ch/station_information.json",
-    "https://sharedmobility.ch/v2/gbfs/bolt_zurich/geofencing_zones"
+    "https://sharedmobility.ch/v2/gbfs/bolt_zurich/geofencing_zones",
+    "https://sharedmobility.ch/v2/gbfs/nextbike_ch/geofencing_zones"
 }
 
 TEST_CONFIGURATIONS_GBFS21 = [
