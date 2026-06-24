@@ -167,7 +167,7 @@ class WebsiteCrawler:
                 web_page.add_found_in(found_in)
 
     def classify_url(self, url: str) -> UrlType:
-        u = canonize_url(url)
+        u = canonize_url(url).split('?')[0]  # truncate URL query parameters first if present
         if (any(u.endswith(e) for e in NOT_RELEVANT_URL_ENDINGS) or
             any(f in u for f in NOT_RELEVANT_URL_CONTAINS) or
             re.search(r'./\d+$', u)):  # ending on a 1+ digits
