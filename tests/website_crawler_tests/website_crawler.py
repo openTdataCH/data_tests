@@ -19,6 +19,7 @@ Further hints:
 - each URL also registers all places it is found in (initial backlog or other pages)
 - The backlog is processed until all pages have been visited.
 - at the end, detailed statistics can be retrieved from the self.backlog.
+
 """
 
 import sys
