@@ -158,7 +158,7 @@ class WebsiteCrawler:
 
     def add_to_backlog(self, urls: Iterable, found_in: str):
         for url in urls:
-            if url not in self.ignore_urls:
+            if not any(url.startswith(u2i) for u2i in self.ignore_urls):
                 web_page = self.backlog.get(url)
                 if web_page is None:
                     kind = self.classify_url(url)
