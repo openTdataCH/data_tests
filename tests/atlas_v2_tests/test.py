@@ -18,7 +18,8 @@ from utilities.test_utilities import DataTest
 
 REF_SIZES_FILE = "tests/atlas_v2_tests/data/atlas_v2_test_sizes.json"
 DATASETS = [ "business-organisation", "contact-point", "line", "parking-lot", "platform", "reference-point",
-             "relation", "service-point", "stop-point", "subline", "toilet", "traffic-point", "timetable-field-number"]
+             "relation", "sectors-and-sector-groups", "service-point", "stop-point", "subline", "toilet",
+             "traffic-point", "timetable-field-number"]
 FLAVOURS = ["timetable-years", "full", "actual-date"]
 SIZE_THRESHOLDS = [0.8, 1.2]
 AGE_IN_DAYS_THRESHOLD = 1.01
