@@ -146,7 +146,7 @@ class WebsiteCrawler:
         indices_of_urls = [i for i in range(len(text)) if text.startswith('http://', i) or text.startswith('https://', i)]
         urls = set()
         for i in indices_of_urls:
-            i_end = min([text.find(token, i) for token in ('"', "'", '"', '?', ' ', ')', '<', '#', '&quot;', '\n', '\r') if text.find(token, i) > 0])
+            i_end = min([text.find(token, i) for token in ('"', "'", ' ', ')', '<', '#', '&quot;', '\n', '\r') if text.find(token, i) > 0])
             if i_end > i:
                 url = canonize_url(text[i:i_end])
                 kind = self.classify_url(url)
