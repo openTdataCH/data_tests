@@ -183,11 +183,11 @@ class WebsiteCrawler:
             sc_counts[web_page.response_code] += 1
         return dict(sc_counts)
 
-    def get_web_pages_for_status_code(self, status_code: int) -> list:
+    def get_web_pages_for_status_code(self, status_code: str) -> list:
         pages = []
         for url in sorted(self.backlog.keys()):
             web_page = self.backlog[url]
-            if web_page.response_code == status_code:
+            if web_page.response_code == str(status_code):
                 pages.append(web_page)
         return pages
 
