@@ -48,7 +48,7 @@ class UrlType(Enum):
 def canonize_url(url: str) -> str:
     while url[-1] in "/&":
         url = url[:-1]
-    return url.lower()
+    return url
 
 
 def defuse(text: str) -> str:
@@ -77,7 +77,7 @@ class WebPage:
         self.excerpt = defuse(str(text)[0:self.excerpt_length])
 
     def __str__(self):
-        return f"WebPage: url={self.url_str} - own={self.own} - visited={self.visited} - response_code={self.response_code} - bytes={self.bytes} - found_in={len(self.found_in)} - excerpt={defuse(self.excerpt)}"
+        return f"WebPage: url={self.url_str} - own={self.own} - visited={self.visited} - response_code={self.response_code} - bytes={self.bytes} - found_in={len(self.found_in)} - excerpt={self.excerpt}"
 
 
 class WebsiteCrawler:
@@ -97,7 +97,7 @@ class WebsiteCrawler:
         for url in initial_backlog:
             url_canonized = canonize_url(url)
             kind = self.classify_url(url_canonized)
-            web_page = WebPage(url_canonized, own=(kind==UrlType.OWN))
+            web_page = WebPage(url_canonized, own=(kind==UrlType.OWN), excerpt_length=50)
             web_page.add_found_in("initial_backlog")
             self.backlog[url_canonized] = web_page
         if self.logger:
@@ -129,9 +129,9 @@ class WebsiteCrawler:
 
     def visit_web_page(self, web_page: WebPage):
         try:
-            response = requests.get(web_page.url_str, allow_redirects=True, timeout=5.0)
+            response = requests.get(web_page.url_str, allow_redirects=True, timeout=20.0)
             web_page.visited = True
-            web_page.response_code = response.status_code
+            web_page.response_code = str(response.status_code)
             web_page.bytes = len(response.content)
             text = response.content.decode("utf-8")
             web_page.add_excerpt(text)
@@ -140,7 +140,7 @@ class WebsiteCrawler:
                 self.add_to_backlog(urls_in_page, web_page.url_str)
         except Exception as e:
             web_page.visited = True
-            web_page.response_code = 9999  # for Exception
+            web_page.response_code = "ERROR"  # for Exception
             web_page.bytes = 0
             web_page.add_excerpt(str(e))
 
