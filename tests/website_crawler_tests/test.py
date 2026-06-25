@@ -57,7 +57,7 @@ def run():
     sc_count = wc.get_status_code_count()
     total = 0
     for status_code in sorted(sc_count.keys()):
-        if status_code == 400 or status_code >= 404:
+        if status_code == "400" or status_code >= "404":
             count = sc_count.get(status_code)
             data_test.log_info(f"http status code {status_code} for {count} page{'s' if count != 1 else ''}:")
             web_pages = wc.get_web_pages_for_status_code(status_code)
@@ -68,7 +68,9 @@ def run():
                 total += 1
     threshold = CONFIG['warning_threshold']
     if threshold and total >= threshold:
-        data_test.log_warning(f"Pages 404: {total} pages found, exceeds threshold of {threshold}")
+        data_test.log_warning(f"Pages 404: {total} pages found, exceeds threshold of {threshold}.")
+    else:
+        data_test.log_info(f"Pages 404: {total} pages found, is below threshold of {threshold}.")
     return data_test
 
 
