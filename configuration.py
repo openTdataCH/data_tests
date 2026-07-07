@@ -29,7 +29,8 @@ CONFIG = {
         "Wednesday": ["07:00", "18:00"],
         "Thursday": ["07:00", "18:00"],
         "Friday": ["07:00", "18:00"]
-    }
+    },
+    "history_retention_days": 2
 }
 
 
