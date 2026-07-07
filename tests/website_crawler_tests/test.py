@@ -63,8 +63,10 @@ def run():
             web_pages = wc.get_web_pages_for_status_code(status_code)
             for web_page in web_pages:
                 found_in = sorted(web_page.found_in)
-                data_test.log_info(f"- status code {status_code} for {web_page.url_str} - excerpt: {web_page.excerpt}... -" \
-                        f"\nThis URL was found in these {len(found_in)} pages{f' (first {TRUNCATE_AT} only)' if len(found_in) > TRUNCATE_AT else ''}:\n- {'\n- '.join(found_in[:TRUNCATE_AT])}")
+                m = f'these {len(found_in)} pages' if len(found_in) > 1 else 'this page'
+                m = m + (f' (first {TRUNCATE_AT} only)' if len(found_in) > TRUNCATE_AT else '')
+                data_test.log_info(f"- status code {status_code} for URL {web_page.url_str} - excerpt: {web_page.excerpt}... -" \
+                        f"\nThis URL was found in {m}:\n- {'\n- '.join(found_in[:TRUNCATE_AT])}")
                 total += 1
     threshold = CONFIG['warning_threshold']
     if threshold and total >= threshold:
