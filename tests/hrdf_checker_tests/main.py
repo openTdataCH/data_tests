@@ -14,7 +14,7 @@ from tests.hrdf_checker_tests.utils.list_utils import convert_list_to_dict
 from utilities.test_utilities import DataTest
 
 THRESHOLDS = {
-    "max_betreiber_fahreten_diviation_relative": 0.15
+    "max_betreiber_fahrten_deviation_relative": 0.15
 }
 
 
@@ -140,33 +140,33 @@ def run(data_test: DataTest, variant: str, static_mode = False):
         fahrplan_bezeichnung = hrdf_parser_object.get_eckdaten()['fahrplanBezeichnung']
         # amount of fahrten comparison
         hrdf_betreiber_number_list = [x["zZeile"]["verwaltung"] for x in hrdf_fplan_entries]
-        HRDF_ANZANHL_BETREIBER_FILE_NAME = "hrdf_anzahl_betreiber.json"
+        HRDF_ANZAHL_BETREIBER_FILE_NAME = "hrdf_anzahl_betreiber.json"
         for betreiber_number in hrdf_betreiber_number_dict.keys():
             hrdf_betreiber_number_dict[betreiber_number] = hrdf_betreiber_number_list.count(
                 betreiber_number)
         try:
-            loaded_hrdf_betrieber_number_dict = \
-                persister_object.get_latest_structured_data(HRDF_ANZANHL_BETREIBER_FILE_NAME)[
+            loaded_hrdf_betreiber_number_dict = \
+                persister_object.get_latest_structured_data(HRDF_ANZAHL_BETREIBER_FILE_NAME)[
                     'data']
-            for betreiber_number in loaded_hrdf_betrieber_number_dict.keys():
+            for betreiber_number in loaded_hrdf_betreiber_number_dict.keys():
                 try:
-                    factor = loaded_hrdf_betrieber_number_dict[betreiber_number] / \
+                    factor = loaded_hrdf_betreiber_number_dict[betreiber_number] / \
                              hrdf_betreiber_number_dict[betreiber_number]
                     if THRESHOLDS[
-                        "max_betreiber_fahreten_diviation_relative"] > factor or factor > 1 + \
-                            THRESHOLDS["max_betreiber_fahreten_diviation_relative"]:
+                        "max_betreiber_fahrten_deviation_relative"] > factor or factor > 1 + \
+                            THRESHOLDS["max_betreiber_fahrten_deviation_relative"]:
                         data_test.log_info(
-                            f"Betreiber {betreiber_number} amount of fahrten (current: {hrdf_betreiber_number_dict[betreiber_number]} previous: {loaded_hrdf_betrieber_number_dict[betreiber_number]}) is outside of range (±{THRESHOLDS["max_betreiber_fahreten_diviation_relative"]:.2%}) with {factor:.2%}",
+                            f"Betreiber {betreiber_number} amount of fahrten (current: {hrdf_betreiber_number_dict[betreiber_number]} previous: {loaded_hrdf_betreiber_number_dict[betreiber_number]}) is outside of range (±{THRESHOLDS["max_betreiber_fahrten_deviation_relative"]:.2%}) with {factor:.2%} of the previous value.",
                             True)
                 except KeyError as e:
-                    data_test.log_warning(f"Betreiber number {e} not found")
+                    data_test.log_warning(f"Betreiber number {e} not found in current FPLAN file (but present in previous FPLAN file).")
                 except ZeroDivisionError as e:
                     data_test.log_warning(
-                        f"Betreiber {betreiber_number} has zero fahrten currently, this should never happen, because the betreibers are loaded from the fplan file")
+                        f"Betreiber {betreiber_number} has zero fahrten currently, this should never happen, because the betreibers are loaded from the FPLAN file.")
         except FileNotFoundError:
             data_test.log_warning(
-                f"No betreiber numbers found (at {os.path.join(persister_object.file_path, HRDF_ANZANHL_BETREIBER_FILE_NAME)}), you can ignore this warning if this is the first time running")
-        persister_object.append_structured_data(HRDF_ANZANHL_BETREIBER_FILE_NAME,
+                f"No betreiber numbers found (at {os.path.join(persister_object.file_path, HRDF_ANZAHL_BETREIBER_FILE_NAME)}), you can ignore this warning if this is the first time running.")
+        persister_object.append_structured_data(HRDF_ANZAHL_BETREIBER_FILE_NAME,
                                                 hrdf_betreiber_number_dict, fahrplan_bezeichnung)
 
         list_of_bfkoords = hrdf_parser_object.get_bfkoord_wgs()
