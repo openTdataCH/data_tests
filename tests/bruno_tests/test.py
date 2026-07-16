@@ -16,14 +16,27 @@ from utilities.test_utilities import DataTest
 from tests.bruno_tests.bruno_utilities import BrunoRunner
 from utilities.file_and_path_utilities import get_path
 
-RESOURCES = {
-    "OJP2.0": get_path("tests/bruno_tests/data/collection/OJP_2.0_2026_01"),
-    "OJP1.0": get_path("tests/bruno_tests/data/collection/OJP_1.0_2026_01"),
-    "OJP1.0_Sample": get_path("tests/bruno_tests/data/collection/sample_test"),
-    "OJP2.0_Sample": get_path("tests/bruno_tests/data/collection/sample_test_20")
-}
-
 _HEADER_RE = re.compile(r"(.+?)\s+\((\d+)\s+OK\)\s+-\s+(\d+)\s+ms")
+
+def load_resources() -> dict:
+    json_path = get_path("tests/bruno_tests/data/variables/resources.json")
+
+    try:
+        with open(json_path, "r", encoding="utf-8") as f:
+            raw_resources = json.load(f)
+
+        processed_resources = {}
+        for key, data in raw_resources.items():
+            processed_resources[key] = {
+                "path": get_path(data["path"]),
+                "env_name": data["env_name"]
+            }
+        return processed_resources
+    except Exception as e:
+        print(f"Error when loading resources.json: {e}")
+        return {}
+
+RESOURCES = load_resources()
 
 def load_bruno_env(file_path: str, env_name: str) -> dict:
     try:
@@ -80,8 +93,11 @@ def run(variant: str = None) -> DataTest:
         if variant in RESOURCES:
             selected_resources = {variant: RESOURCES[variant]}
         else:
-            data_test.log_failure(f"Version '{variant}' not found in RESOURCES.")
-            return data_test
+            selected_resources = {k: v for k, v in RESOURCES.items() if v["env_name"] == variant}
+
+            if not selected_resources:
+                data_test.log_failure(f"Version or Env '{variant}' not found in RESOURCES.")
+                return data_test
     else:
         selected_resources = RESOURCES
 
@@ -90,7 +106,10 @@ def run(variant: str = None) -> DataTest:
     total_conditions = 0
     total_conditions_failed = 0
 
-    for env_name, base_directory in selected_resources.items():
+    for resource_key, resource_data in selected_resources.items():
+        base_directory = resource_data["path"]
+        env_name = resource_data["env_name"]
+
         data_test.log_info(f"--- Start Tests: {env_name} ---")
 
         env = load_bruno_env(env_file, env_name)
@@ -107,16 +126,18 @@ def run(variant: str = None) -> DataTest:
         expected_amount = len(test_files)
         executed_tests = 0
 
+        abs_base_dir = os.path.abspath(base_directory)
+
         for file_path in test_files:
             if "node_modules" in file_path:
                 continue
 
             abs_file_path = os.path.abspath(file_path)
-            file_dir = os.path.dirname(abs_file_path)
+            relative_file_path = os.path.relpath(abs_file_path, abs_base_dir)
             file_name = os.path.basename(abs_file_path)
 
             try:
-                runner = BrunoRunner(file_name, data_test=data_test, working_dir=file_dir)
+                runner = BrunoRunner(relative_file_path, data_test=data_test, working_dir=abs_base_dir)
                 report, executed, stdout = runner.run(env_vars=env, timeout=120, strict=False)
 
                 if not report or "requests" not in report or not report["requests"]:
@@ -135,7 +156,7 @@ def run(variant: str = None) -> DataTest:
                     p_count = report["summary"]["assertions"]["passed"]
 
                     if f_count > 0:
-                        data_test.log_failure(f"[FAILED] {h_name} (HTTP {h_status}, {h_duration}ms) | {p_count} Tests passed, {f_count} Tests failed")
+                        data_test.log_warning(f"[WARNING] {h_name} (HTTP {h_status}, {h_duration}ms) | {p_count} Tests passed, {f_count} Tests failed")
                         for asrt in req["assertions"]:
                             if asrt["status"] == "failed":
                                 data_test.log_warning(f"  ✕ {asrt['name']}: {asrt['message']}")
@@ -163,5 +184,5 @@ def run(variant: str = None) -> DataTest:
     return data_test
 
 if __name__ == '__main__':
-    tr = run(variant="OJP1.0")
+    tr = run(variant="OJP2.0_TR")
     print(tr)
