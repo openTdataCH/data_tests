@@ -194,7 +194,8 @@
         "from_trip_id": { "required": false },
         "to_trip_id": { "required": false },
         "transfer_type": { "required": true, "enum": ["0", "1", "2", "3", "4", "5"] },
-        "min_transfer_time": { "required": false, "regex": "^\\d+$" }
+        "min_transfer_time": { "required": false, "regex": "^\\d+$" },
+        "service_id": { "required": false }
       }
     },
     "fare_attributes.txt": {
