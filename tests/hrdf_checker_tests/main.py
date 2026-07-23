@@ -101,7 +101,7 @@ def run(data_test: DataTest, variant: str, static_mode = False):
             f"https://data.opentransportdata.swiss/dataset/timetable-54-{variant}-hrdf/permalink",
             hrdf_file_name, True)
         downloader_object.fetch_file(
-            "https://data.opentransportdata.swiss/dataset/service-point-v2/resource_permalink/actual-date-swiss-service-point.csv",
+            "https://data.opentransportdata.swiss/dataset/service-point-v2/resource_permalink/timetable-years-swiss-service-point.csv",
             dienststellen_file_name, True)
     else:
         data_test.log_warning(f"Static mode has been enabled, the plugin will not fetch any data")
