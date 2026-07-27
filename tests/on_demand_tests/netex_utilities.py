@@ -50,6 +50,8 @@ def check_netex(url, data_test):
     if data_test is None:
         data_test = DataTest(name="check_netex")
 
+    data_test.log_info(f"Checking Netex file from {url}")
+
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "SBB-DataTest/1.0"})
         with urllib.request.urlopen(req, timeout=60) as resp:
@@ -100,7 +102,7 @@ def check_netex(url, data_test):
 
     data_test.test(
         condition=(len(corrupt_patterns) == 0),
-        if_false_log_failure=f"Found {len(corrupt_patterns)} patterns with empty points/links (e.g. {corrupt_patterns[:2]})."
+        if_false_log_failure=f"Found {len(corrupt_patterns)} ServiceJourneyPatternRef with empty StopPointInJourneyPattern/ServiceLinkInJourneyPattern (e.g. {corrupt_patterns[:2]})."
     )
 
     # Operator and PrivateCodes
