@@ -316,6 +316,8 @@ def check_hrdf(url, data_test = None, ignore_bitfield_file_check= False) -> Data
     if data_test is None:
         data_test = DataTest(name="check_hrdf")
 
+    data_test.log_info(f"Checking HRDF file from {url}")
+
     try:
         status, headers, raw, final_url = download_bytes_following_zip(url, data_test)
         is_status_ok = data_test.test(
