@@ -137,10 +137,36 @@ def run():
 
             fare_xml_body = get_fare_body(trip_snippet, *params)
             headers = {"Authorization": f"Bearer {test_config['key_ojp_fare']}", "Content-Type": "application/xml; charset=utf-8"}
-            response_fare = requests.post(url_fare, data=fare_xml_body.encode('utf-8'), headers=headers)
-            fare_root = etree.fromstring(response_fare.content)
+            try:
+                response_fare = requests.post(url_fare, data=fare_xml_body.encode('utf-8'), headers=headers)
+            except requests.RequestException as e:
+                data_test.log_warning(f"{test_id} failed with exception: {e}")
+                _dump_to_file(fare_xml_body, case=f"{test_id}_NETWORK_ERROR")
+                continue
 
-            actual_price_str = None
+            if response_fare.status_code != 200 or not response_fare.content.strip():
+                data_test.log_warning(
+                    f"{test_id} API request returned status {response_fare.status_code}. Response: {response_fare.text}"
+                )
+                _dump_to_file(
+                    fare_xml_body + "\n\n" + response_fare.text,
+                    case=f"{test_id}_HTTP_{response_fare.status_code}"
+                )
+                continue
+
+            try:
+                fare_root = etree.fromstring(response_fare.content)
+            except etree.XMLSyntaxError as e:
+                data_test.log_warning(
+                    f"{test_id} Failed to parse API XML response: {e}. Raw Response: {response_fare.text}"
+                )
+                _dump_to_file(
+                    fare_xml_body + "\n\n" + response_fare.text,
+                    case=f"{test_id}_INVALID_XML"
+                )
+                continue
+
+            actual_price_str = 0
             for product in fare_root.findall(".//ojp:FareProduct", NS):
                 tc = product.find("ojp:TravelClass", NS)
                 if tc is not None and tc.text == travel_class:
