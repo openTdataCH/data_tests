@@ -77,7 +77,7 @@ def get_ojp20_tr_first_tfs_enabled_train_leg(origin_ref: str, destin_ref: str, d
                     if service and service['Mode'].get('PtMode') == 'rail':
                         od = service.get('OperatingDayRef')
                         tn = service.get('TrainNumber')
-                        op = service.get('siri:OperatorRef')
+                        op = str(service.get('siri:OperatorRef')).replace("ojp:", "")  # strip new prefix as of July 2026
                         if od and op in TFS_ENABLED_OPERATORS.keys() and tn:
                             return od, op, tn
     except Exception as e:
