@@ -53,7 +53,7 @@ class BrunoRunner:
 
     def build_cmd(self, report_path: str, env_vars: Dict[str, str]) -> List[str]:
         cmd: List[str] = [
-            "bru", "run", self.resource_path,
+            self._bru or "bru", "run", self.resource_path,
             "--format", "json",
             "--output", report_path
         ]
@@ -203,13 +203,12 @@ class BrunoRunner:
         with tempfile.TemporaryDirectory(prefix="bru-run-") as tmpd:
             report_path = os.path.join(tmpd, "report.json")
             cmd_list = self.build_cmd(report_path, env_vars)
-            cmd = " ".join([f'"{arg}"' if " " in arg or "\\" in arg or "/" in arg else arg for arg in cmd_list])
             child_env = os.environ.copy()
             child_env.update(env_vars)
 
             try:
                 proc = subprocess.run(
-                    cmd,
+                    cmd_list,
                     cwd=self.working_dir,
                     env=child_env,
                     stdout=subprocess.PIPE,
@@ -218,13 +217,15 @@ class BrunoRunner:
                     encoding='utf-8',
                     errors='replace',
                     timeout=timeout,
-                    shell=True
+                    shell=False
                 )
             except subprocess.TimeoutExpired:
-                self.data_test.log_failure(f"Timeout when executing: {self.resource_path}")
+                if self.data_test:
+                    self.data_test.log_failure(f"Timeout when executing: {self.resource_path}")
                 return None, 0, ""
             except Exception as e:
-                self.data_test.log_failure(f"Error when starting bru: {e}")
+                if self.data_test:
+                    self.data_test.log_failure(f"Error when starting bru: {e}")
                 return None, 0, ""
 
             stdout = proc.stdout or ""
@@ -281,7 +282,11 @@ class BrunoRunner:
             if report and report["summary"]["tests"] == 0:
                 stdout_tests = self.parse_stdout_for_tests(stdout)
                 if stdout_tests:
-                    report["requests"][0]["assertions"] = stdout_tests
+                    # Update assertions for all requests if they have no test data
+                    for req in report.get("requests", []):
+                        if not req.get("assertions"):
+                            req["assertions"] = stdout_tests
+
                     f_count = sum(1 for a in stdout_tests if a["status"] == "failed")
                     p_count = sum(1 for a in stdout_tests if a["status"] == "passed")
                     report["summary"]["tests"] = len(stdout_tests)
@@ -291,4 +296,10 @@ class BrunoRunner:
                     report["failures"] = [{"assertion": a["name"], "message": a["message"]}
                                           for a in stdout_tests if a["status"] == "failed"]
 
-            return report, 1 if report else 0, stdout
+            # Apply strict mode if enabled
+            if strict and not success:
+                return None, 0, stdout
+
+            # Return correct number of executed requests
+            executed_requests = len(report["requests"]) if report else 0
+            return report, executed_requests, stdout
