@@ -139,7 +139,8 @@ def run():
                     try:
                         count_400plus += test_tfs(conn_key, endpoint, od, op, tn, data_test, is_first = is_first)
                     except Exception as e:
-                        count_400plus += data_test.log_exception(f"Failed to test {endpoint} / {conn_key}: {e}", e)
+                        count_400plus += 1
+                        data_test.log_exception(f"Failed to test {endpoint} / {conn_key}: {e}", e)
                     is_first = False
     if count_400plus > THRESHOLDS_FOR_NON_200_TESTS['failure']:
         data_test.log_failure(f"{count_400plus} tests with 400+ code exceeds threshold {THRESHOLDS_FOR_NON_200_TESTS['failure']} --> FAILURE.")
