@@ -11,16 +11,18 @@ The run method requires no config at all (hence, no 'config' parameter).
 from collections import defaultdict
 
 from utilities.ckan_utilities import load_ckan_package, resource_by_identifier
-from utilities.csv_utilities import load_csv_from_url
+from utilities.csv_utilities import load_csv_from_url, load_csv_streaming_and_do_data_checks
 from utilities.datetime_utilities import age_in_days
 from utilities.json_utilities import load_json_file, save_json_file
 from utilities.test_utilities import DataTest
 
 REF_SIZES_FILE = "tests/atlas_v2_tests/data/atlas_v2_test_sizes.json"
+SCHEMA_CONFIG_FILE = "tests/atlas_v2_tests/data/atlas_v2_schema_config.json"
 DATASETS = [ "business-organisation", "contact-point", "line", "parking-lot", "platform", "reference-point",
              "relation", "sectors-and-sector-groups", "service-point", "stop-point", "subline", "toilet",
              "traffic-point", "timetable-field-number"]
 FLAVOURS = ["timetable-years", "full", "actual-date"]
+TEST_NAME = "atlas_v2_tests"
 SIZE_THRESHOLDS = [0.8, 1.2]
 AGE_IN_DAYS_THRESHOLD = 1.01
 ALPHA = 0.2  # alpha factor for the Exponential Moving Average (EMA) of the sizes
@@ -28,8 +30,14 @@ ALPHA = 0.2  # alpha factor for the Exponential Moving Average (EMA) of the size
 CKAN_BASE_URL = "https://data.opentransportdata.swiss/dataset"
 
 def run() -> dict:
-    data_test = DataTest(name="atlas_v2_tests")
+    data_test = DataTest(name=TEST_NAME)
     ref_sizes = load_json_file(REF_SIZES_FILE)
+    schema_master = load_json_file(SCHEMA_CONFIG_FILE)
+    csv_schema_spec = schema_master.get("csv_schema_spec", {}) if schema_master else {}
+
+    if schema_master is None:
+        data_test.log_warning(f"Schema config file {SCHEMA_CONFIG_FILE} is missing or invalid JSON.")
+
     sizes = defaultdict(lambda : {})
     sucesses = ""
     for dataset in DATASETS:
@@ -41,6 +49,18 @@ def run() -> dict:
                 url = f"{CKAN_BASE_URL}/{dataset}-v2/resource_permalink/{identifier}"
                 header, rows, status_code, data_test = load_csv_from_url(url, data_test=data_test, silent=True)
                 if status_code < 400:
+                    file_schema = csv_schema_spec.get(identifier)
+                    if file_schema:
+                        data_test = load_csv_streaming_and_do_data_checks(
+                            url=url,
+                            schema_config=file_schema,
+                            delimiter=";",
+                            filename=identifier,
+                            data_test=data_test,
+                        )
+                    else:
+                        data_test.log_warning(f"No schema configuration for '{identifier}' found in {SCHEMA_CONFIG_FILE}.")
+
                     if ref_sizes:
                         ref_sizes_ds = ref_sizes.get(dataset)
                         if ref_sizes_ds:
