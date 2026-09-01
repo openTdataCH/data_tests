@@ -83,9 +83,7 @@ def generate_dashboard():
     if not os.path.exists(HTML_OUT_DIR):
         os.makedirs(HTML_OUT_DIR)
 
-    for filename in os.listdir(CONFIG['folders']['test_reports']):
-        if not filename.endswith('.jsonl'):
-            continue
+    for filename in [f for f in sorted(os.listdir(CONFIG['folders']['test_reports'])) if f.endswith('.jsonl')]:
 
         test_id = filename.replace('.jsonl', '')
 
