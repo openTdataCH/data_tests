@@ -157,11 +157,21 @@ def check_thresholds(counts, config, data_test: DataTest):
     n = config['number_of_tests']
     for key, twp in config['thresholds_warn_percents'].items():
         if counts.get(key):
-            threashold_warn, threashold_fail = round(1.0 * (n - twp)), round(1.0 * (n - twp) * f2w_ratio)
+            threashold_warn, threashold_fail = round(0.01 * (100.0 - twp) * n), round(0.01 * (100.0 - twp * f2w_ratio) * n)
             if counts[key] < threashold_fail:
                 data_test.log_failure(f"Only {counts[key]} of {n} total succeeded, is below failure threshold {threashold_fail}.")
             elif counts[key] < threashold_warn:
                 data_test.log_warning(f"Only {counts[key]} of {n} total succeeded, is below warning threshold {threashold_warn}.")
+
+
+def show_statistics_one_bar(key: str, percentage: int,  data_test: DataTest):
+    data_test.log_info(f"{key:12}: {percentage:>3d} % {'▓' * percentage}{'░' * (100 - percentage)}")
+
+
+def show_statistics(counts, config, data_test: DataTest):
+    for key in [k for k in counts.keys() if k.startswith('v')] + ['total']:
+        percentage = round(100.0 * counts[key] / config['number_of_tests'])
+        show_statistics_one_bar(key, percentage, data_test)
 
 
 def run():
@@ -183,7 +193,7 @@ def run():
 
             trip_i += 1
 
-        data_test.log_info(f"Test statistics: {str(dict(counts))}.")
+        show_statistics(counts, config, data_test)
         check_thresholds(counts, config, data_test)
 
     except Exception as e:
