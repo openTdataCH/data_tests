@@ -33,6 +33,7 @@ Thie config.json file must have the following structure / nodes:
 }
 
 """
+
 import time
 
 import json
@@ -159,13 +160,13 @@ def check_thresholds(counts, config, data_test: DataTest):
         if counts.get(key):
             threashold_warn, threashold_fail = round(0.01 * (100.0 - twp) * n), round(0.01 * (100.0 - twp * f2w_ratio) * n)
             if counts[key] < threashold_fail:
-                data_test.log_failure(f"Only {counts[key]} of {n} total succeeded, is below failure threshold {threashold_fail}.")
+                data_test.log_failure(f"Only {counts[key]} of {n} total succeeded for {key}, is below failure threshold {threashold_fail}.")
             elif counts[key] < threashold_warn:
-                data_test.log_warning(f"Only {counts[key]} of {n} total succeeded, is below warning threshold {threashold_warn}.")
+                data_test.log_warning(f"Only {counts[key]} of {n} total succeeded for {key}, is below warning threshold {threashold_warn}.")
 
 
 def show_statistics_one_bar(key: str, percentage: int,  data_test: DataTest):
-    data_test.log_info(f"{key:12}: {percentage:>3d} % {'▓' * percentage}{'░' * (100 - percentage)}")
+    data_test.log_info(f"Valid {'■' * percentage}{'□' * (100 - percentage)} {percentage} % for {key}.")
 
 
 def show_statistics(counts, config, data_test: DataTest):
