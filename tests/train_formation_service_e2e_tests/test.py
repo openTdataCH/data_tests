@@ -163,7 +163,7 @@ def check_thresholds(counts, config, data_test: DataTest):
                 data_test.log_failure(f"Only {counts[key]} of {n} total succeeded for {key}, is below failure threshold {threashold_fail}.")
             elif counts[key] < threashold_warn:
                 data_test.log_warning(f"Only {counts[key]} of {n} total succeeded for {key}, is below warning threshold {threashold_warn}.")
-
+    data_test.log_info("finished thresholds checks.")
 
 def show_statistics_one_bar(key: str, percentage: int,  data_test: DataTest):
     data_test.log_info(f"Valid {'■' * percentage}{'□' * (100 - percentage)} {percentage} % for {key}.")
