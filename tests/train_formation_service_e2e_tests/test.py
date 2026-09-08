@@ -64,27 +64,33 @@ def get_ojp20_tr_first_tfs_enabled_train_leg(config: dict, origin_ref: str, dest
                 legs = [legs]
             for leg in legs:
                 if leg.get('TimedLeg'):
-                    service = leg['TimedLeg'].get('Service')
+                    timed_leg = leg['TimedLeg']
+                    departure_name = timed_leg.get('LegBoard').get('StopPointName').get('Text').get('#text')
+                    departure_time = timed_leg.get('LegBoard').get('ServiceDeparture').get('TimetabledTime')
+                    arrival_name = timed_leg.get('LegAlight').get('StopPointName').get('Text').get('#text')
+                    arrival_time = timed_leg.get('LegAlight').get('ServiceArrival').get('TimetabledTime')
+                    conn_string = f"{departure_name} {departure_time[11:16]}Z -> {arrival_name} {arrival_time[11:16]}Z"
+                    service = timed_leg.get('Service')
                     if service and service['Mode'].get('PtMode') == 'rail':
                         od = service.get('OperatingDayRef')
                         tn = service.get('TrainNumber')
                         op = service.get('siri:OperatorRef')
                         op = str(op).replace("ojp:", "") if op is not None else None  # strip new prefix as of July 2026
                         if od and op in config.get('tfs_enabled_operators').keys() and tn:
-                            return od, op, tn
+                            return od, op, tn, conn_string
     except Exception as e:
         # this may happen, probably not a problem -- just log it as 'info' and ignore it otherwise.
         data_test.log_info(f"Failed to get a train from given OJP20 TR response for {origin_ref}, {destin_ref}: {e}.")
-    return None, None, None
+    return None, None, None, None
 
 
 def obtain_train(index, config: dict, trip: dict, data_test: DataTest):
     trip_props = trip['properties']
-    od, op, tn = get_ojp20_tr_first_tfs_enabled_train_leg(config, trip_props['origin_number'], trip_props['destin_number'], data_test)
+    od, op, tn, conn_str = get_ojp20_tr_first_tfs_enabled_train_leg(config, trip_props['origin_number'], trip_props['destin_number'], data_test)
     if od and op and tn:
-        data_test.log_info(f"#{index}: Found train {od, op, tn} for trip {trip_props['origin_name']} to {trip_props['destin_name']}.")
+        data_test.log_info(f"#{index}: Found train {od, op, tn} / {conn_str} for OJP trip {trip_props['origin_name']} to {trip_props['destin_name']}.")
     else:
-        data_test.log_info(f"#{index}: Found no train for trip {trip_props['origin_name']} to {trip_props['destin_name']}.")
+        data_test.log_info(f"#{index}: Found no train for OJP trip {trip_props['origin_name']} to {trip_props['destin_name']}.")
     return od, op, tn
 
 
