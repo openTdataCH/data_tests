@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="en">
+<head>
+    <link rel="stylesheet" href="../styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>data_tests daily history of {{ date }}</title>
+</head>
+<body>
+<h1 style="color: blue;">data_tests daily history of {{ date }}</h1>
+<p><b><a href="{{ dashboard_url }}">data_tests</a></b> had these exceptions, failures and/or warnings in the last {{ THRESHOLD_HOURS }} hours:</p>
+<hr>
+<p>
+{{ payload }}
+</p>
+</body>
+</html>
