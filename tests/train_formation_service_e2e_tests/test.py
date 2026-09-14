@@ -166,7 +166,7 @@ def check_thresholds(counts, config, data_test: DataTest):
     f2w_ratio = config['fail_to_warn_ratio']
     n = config['number_of_tests']
     for key, twp in config['thresholds_warn_percents'].items():
-        if counts.get(key):
+        if counts.get(key) is not None:
             threashold_warn, threashold_fail = round(0.01 * (100.0 - twp) * n), round(0.01 * (100.0 - twp * f2w_ratio) * n)
             if counts[key] < threashold_fail:
                 data_test.log_failure(f"Only {counts[key]} of {n} total succeeded for {key}, is below failure threshold {threashold_fail}.")
@@ -181,7 +181,7 @@ def show_statistics_one_bar(key: str, percentage: int,  data_test: DataTest):
 
 def show_statistics(counts, config, data_test: DataTest):
     data_test.log_info("Statistics:")
-    for key in [k for k in counts.keys() if k.startswith('v')] + ['total']:
+    for key in [k for k in counts.keys() if k.startswith('v')]:
         percentage = round(100.0 * counts[key] / config['number_of_tests'])
         show_statistics_one_bar(key, percentage, data_test)
 
