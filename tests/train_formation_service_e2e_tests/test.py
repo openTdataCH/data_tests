@@ -187,7 +187,7 @@ def show_statistics(counts, config, data_test: DataTest):
 
 
 def time_ahead_hours(variant) -> float:
-    # from a given string like 'time=24.0h', extract the float, i.e. 24.0.
+    # from a given string like 'time=24.0h', extract the float, 24.0 in this example.
     try:
         return float(''.join(c for c in str(variant) if c.isdigit() or c in '.-'))
     except:
