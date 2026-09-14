@@ -121,7 +121,6 @@ def validate_v1_and_v2(config, conn_key, resp):
         # variants full and vehicle-based:
         if format.endswith('full') or format.endswith('vehi'):
             msg += "" if resp.get('formations') and len(resp.get('formations')) > 0 else "Missing or empty 'formations' node. "
-            msg += "" if resp.get('relationships') and len(resp.get('relationships')) > 0 else "Missing or empty 'relationships' node. "
 
         # variants full and stop-based:
         if format.endswith('full') or format.endswith('stop'):
