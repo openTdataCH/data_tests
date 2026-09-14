@@ -19,7 +19,7 @@ from utilities.test_utilities import html_report_from_json
 
 LOG_FILE = os.path.join(CONFIG['folders']['logs'], "daily_history.log")
 logging.basicConfig(handlers=[logging.FileHandler(LOG_FILE, 'a', 'utf-8')], level=logging.INFO, format='%(asctime)s: %(levelname)s: %(message)s')
-YESTERDAY = (datetime.now() - timedelta(days=0)).isoformat()[:10]
+YESTERDAY = (datetime.now() - timedelta(days=1)).isoformat()[:10]
 OUT_DIR = "data/html/history"
 os.makedirs(OUT_DIR, exist_ok=True)
 OUT_PATH = f"{OUT_DIR}/{YESTERDAY}.html"
