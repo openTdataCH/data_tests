@@ -1,5 +1,8 @@
 """End-to-end testing of the train formation service API.
 
+The test accepts a "variant" parameter, which is the "time ahead" in hours. Default is 0.
+If provided, it will be added to the departure time in the OJP 2.0 TR.
+
 The test is designed to run a best-possible, reproducible list of trains.
 
 The test works as follows:
@@ -53,10 +56,10 @@ NOW = dt.now().isoformat()
 TEST_NAME = "train_formation_service_e2e_tests"
 
 
-def get_ojp20_tr_first_tfs_enabled_train_leg(config: dict, origin_ref: str, destin_ref: str, data_test: DataTest) -> tuple:
+def get_ojp20_tr_first_tfs_enabled_train_leg(config: dict, origin_ref: str, destin_ref: str, data_test: DataTest, time_ahead_h: float) -> tuple:
     """From the given OJP 2.0 TR, extracts the first op_day, TFS-enabled operator and train number it can find, or None."""
     try:
-        status, size, ojpdict = ojp20_triprequest(origin_ref, destin_ref, return_as='dict')
+        status, size, ojpdict = ojp20_triprequest(origin_ref, destin_ref, return_as='dict', time_ahead_h=time_ahead_h)
         trips = ojpdict['OJP']['OJPResponse']['siri:ServiceDelivery']['OJPTripDelivery']['TripResult']
         for trip in trips:
             legs = trip['Trip']['Leg']
@@ -69,7 +72,7 @@ def get_ojp20_tr_first_tfs_enabled_train_leg(config: dict, origin_ref: str, dest
                     departure_time = timed_leg.get('LegBoard').get('ServiceDeparture').get('TimetabledTime')
                     arrival_name = timed_leg.get('LegAlight').get('StopPointName').get('Text').get('#text')
                     arrival_time = timed_leg.get('LegAlight').get('ServiceArrival').get('TimetabledTime')
-                    conn_string = f"{departure_name} {departure_time[11:16]}Z -> {arrival_name} {arrival_time[11:16]}Z"
+                    conn_string = f"{departure_name} {departure_time[8:16]}Z -> {arrival_name} {arrival_time[8:16]}Z"
                     service = timed_leg.get('Service')
                     if service and service['Mode'].get('PtMode') == 'rail':
                         od = service.get('OperatingDayRef')
@@ -84,9 +87,9 @@ def get_ojp20_tr_first_tfs_enabled_train_leg(config: dict, origin_ref: str, dest
     return None, None, None, None
 
 
-def obtain_train(index, config: dict, trip: dict, data_test: DataTest):
+def obtain_train(index, config: dict, trip: dict, data_test: DataTest, time_ahead_h: float):
     trip_props = trip['properties']
-    od, op, tn, conn_str = get_ojp20_tr_first_tfs_enabled_train_leg(config, trip_props['origin_number'], trip_props['destin_number'], data_test)
+    od, op, tn, conn_str = get_ojp20_tr_first_tfs_enabled_train_leg(config, trip_props['origin_number'], trip_props['destin_number'], data_test, time_ahead_h)
     if od and op and tn:
         data_test.log_info(f"#{index}: Found train {od, op, tn} / {conn_str} for OJP trip {trip_props['origin_name']} to {trip_props['destin_name']}.")
     else:
@@ -146,7 +149,7 @@ def do_validition(config, conn_key, response, data_test):
         return 0
 
 
-def test_tfs(config, conn_key, operation_date, evu_nr, train_number, data_test):
+def test_tfs(config, conn_key, operation_date, evu_nr, train_number, data_test: DataTest):
     global previews_bytes_count
     tyk_key = config['connections'][conn_key]['tyk_key']
     url = config['connections'][conn_key]['url']
@@ -182,8 +185,17 @@ def show_statistics(counts, config, data_test: DataTest):
         show_statistics_one_bar(key, percentage, data_test)
 
 
-def run():
+def time_ahead_hours(variant) -> float:
+    try:
+        days = float(variant)
+        return days * 24.0
+    except:
+        return 0.0
+
+
+def run(variant: str = None) -> DataTest:
     data_test = DataTest(name=TEST_NAME)
+    time_ahead_h = time_ahead_hours(variant)
     counts = defaultdict(int)
     try:
         config, trips = load_configs(data_test)
@@ -191,7 +203,7 @@ def run():
         trip_i = 0
         while counts['total'] < config['number_of_tests']:
             trip = trips[trip_i]
-            od, op, tn = obtain_train(trip_i, config, trip, data_test)
+            od, op, tn = obtain_train(trip_i, config, trip, data_test, time_ahead_h)
             if od and op and tn:
                 for conn_key in config['connections'].keys():
                     counts[conn_key] += test_tfs(config, conn_key, od, op, tn, data_test)

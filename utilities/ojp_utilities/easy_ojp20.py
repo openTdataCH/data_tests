@@ -10,8 +10,8 @@ from zoneinfo import ZoneInfo
 
 import json
 import requests
-from datetime import datetime as dt
-from lxml import etree
+from datetime import datetime, timedelta
+from xml import etree
 
 from configuration import get_prop
 from utilities.service_points_utilities.easy_sp import get_service_point
@@ -97,8 +97,8 @@ OJP_TR_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
     </OJPRequest>
 </OJP>"""
 
-def _now_iso8601():
-    return dt.now(tz=ZoneInfo("Europe/Berlin")).isoformat()
+def _now_iso8601(time_ahead_h = 0.0):
+    return (datetime.now(tz=ZoneInfo("Europe/Berlin")) + timedelta(hours=time_ahead_h)).isoformat()
 
 
 def _sp_name_for_bpuic(bpuic: str):
@@ -136,13 +136,16 @@ def ojp_trip_request(url: str, a_bpuic: str, a_name: str, b_bpuic: str, b_name: 
     return status, size, response_str
 
 
-def ojp20_triprequest(a_bpuic: str, b_bpuic: str, departure_time_iso8601 = _now_iso8601(), return_as = "str", data_test: DataTest = None) -> tuple:
+def ojp20_triprequest(a_bpuic: str, b_bpuic: str, departure_time_iso8601 = None, return_as = "str", data_test: DataTest = None, time_ahead_h: float = 0.0) -> tuple:
     """A simple access to the OJP 2.0 TripRquest, with A and B (bpuic), optional departure time.
     Depending on "return_as", returns a bytes response ("bytes"), a XML str ("str", default), or a lxml _Element object ("xml", "lxml") or dict ("dict").
     Returns the HTTPS status code, the size in bytes,  and the desired object/format."""
+    if departure_time_iso8601 is None:
+        departure_time_iso8601 = _now_iso8601(time_ahead_h)
     a_name, b_name = _sp_name_for_bpuic(a_bpuic), _sp_name_for_bpuic(b_bpuic)
     url = "https://api.opentransportdata.swiss/ojp20"
     return ojp_trip_request(url, a_bpuic, a_name, b_bpuic, b_name, departure_time_iso8601, return_as, OJP_TR_TEMPLATE, data_test, headers)
+
 
 def ojp10_triprequest(a_bpuic: str, a_name: str, b_bpuic: str, b_name: str, departure_time_iso8601 = _now_iso8601(), return_as = "str", data_test: DataTest = None) -> tuple:
     """A simple access to the OJP 1.0 TripRquest, with A and B (bpuic), optional departure time.
