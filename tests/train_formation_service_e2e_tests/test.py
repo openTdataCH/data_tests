@@ -181,7 +181,7 @@ def show_statistics_one_bar(key: str, percentage: int,  data_test: DataTest):
 
 def show_statistics(counts, config, data_test: DataTest):
     data_test.log_info("Statistics:")
-    for key in [k for k in counts.keys() if k.startswith('v')] + ['total']:
+    for key in [k for k in counts.keys() if k.startswith('v')]:
         percentage = round(100.0 * counts[key] / config['number_of_tests'])
         show_statistics_one_bar(key, percentage, data_test)
 
