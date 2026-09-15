@@ -11,7 +11,7 @@ from zoneinfo import ZoneInfo
 import json
 import requests
 from datetime import datetime, timedelta
-from xml import etree
+from lxml import etree
 
 from configuration import get_prop
 from utilities.service_points_utilities.easy_sp import get_service_point
@@ -98,7 +98,7 @@ OJP_TR_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
 </OJP>"""
 
 def _now_iso8601(time_ahead_h = 0.0):
-    return (datetime.now(tz=ZoneInfo("Europe/Berlin")) + timedelta(hours=time_ahead_h)).isoformat()
+    return (datetime.now(tz=ZoneInfo("UTC")) + timedelta(hours=time_ahead_h)).isoformat()[:19] + "Z"
 
 
 def _sp_name_for_bpuic(bpuic: str):
