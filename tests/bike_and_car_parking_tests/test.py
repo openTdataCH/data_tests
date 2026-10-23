@@ -33,4 +33,3 @@ def run() -> dict:
 if __name__ == '__main__':
     tr = run()
     print(tr)
-    print(tr['logs'])
