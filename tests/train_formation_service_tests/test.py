@@ -102,7 +102,7 @@ def test_tfs(conn_key, endpoint, operation_date, evu_nr, train_number, data_test
     diff = 0 if is_first else n_bytes - previews_bytes_count
     diff_message = f", diff: {diff} bytes" if diff != 0 else ""
     previews_bytes_count = n_bytes
-    message = f"TFS test {conn_key} / {endpoint}: {response.status_code} {response.reason}, {n_bytes} bytes{diff_message}"
+    message = f"TFS test {conn_key}/{endpoint[11:15]}: {response.status_code} {response.reason}, {n_bytes} bytes{diff_message}"
     if response.status_code < 400:
         data_test.log_info(f"✅{message}.")
         return 0
