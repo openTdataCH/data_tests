@@ -76,7 +76,7 @@ def check_harvesters(harvesters: list, data_test: DataTest) -> dict:
                 count_hanging += 1
             gather_error_summary = last_job.get("gather_error_summary")
             if gather_error_summary and len(gather_error_summary) > 0:
-                data_test.log_failure(f"CKAN harvester " + str(harvester) + " last_job had an error: ..." + str(gather_error_summary)[-30:] + " !")
+                data_test.log_failure(f"CKAN harvester " + str(harvester) + " last_job had an error: ..." + str(gather_error_summary)[-50:] + " !")
                 #data_test.log_failure(f"CKAN harvester '{harvester}' last_job had an error: {str(gather_error_summary).replace('\n', '')}!")
             frequency = meta_data.get("frequency")
             notes_lc = str(meta_data.get("notes")).lower()
