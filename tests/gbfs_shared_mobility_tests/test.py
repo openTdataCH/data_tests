@@ -32,7 +32,14 @@ EXCLUDED_URLS = {
     "https://sharedmobility.ch/station_information.json",
     "https://sharedmobility.ch/v2/gbfs/bolt_zurich/geofencing_zones",
     "https://sharedmobility.ch/v2/gbfs/nextbike_ch/geofencing_zones",
-    "https://sharedmobility.ch/v2/gbfs/velospot/geofencing_zones"
+    "https://sharedmobility.ch/v2/gbfs/velospot/geofencing_zones",
+    "https://sharedmobility.ch/v2/gbfs/lime_basel/gbfs_versions",
+    "https://sharedmobility.ch/v2/gbfs/lime_opfikon/gbfs_versions",
+    "https://sharedmobility.ch/v2/gbfs/lime_wetzikon/gbfs_versions",
+    "https://sharedmobility.ch/v2/gbfs/lime_uster/gbfs_versions",
+    "https://sharedmobility.ch/v2/gbfs/lime_winterthur/gbfs_versions",
+    "https://sharedmobility.ch/v2/gbfs/lime_zug/gbfs_versions",
+    "https://sharedmobility.ch/v2/gbfs/lime_zurich/gbfs_versions"
 }
 
 TEST_CONFIGURATIONS_GBFS21 = [
